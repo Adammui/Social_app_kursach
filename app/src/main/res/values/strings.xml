@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Social_app_kursach</string>
+    <string name="title_activity_main_screen">MainScreen</string>
+    <string name="title_home">Userpage</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Messages</string>
+</resources>

@@ -14,7 +14,16 @@
         android:theme="@style/Theme.Social_app_kursach">
         <activity
             android:name=".LoginActivity"
-            android:exported="true" />
+            android:exported="true" >
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="reyne.social_app_kursach"/>
+            </intent-filter>
+        </activity>
         <activity
             android:name=".MainScreen"
             android:exported="true"
@@ -25,9 +34,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".MainActivity"
-            android:exported="true"></activity>
+
     </application>
 
 </manifest>

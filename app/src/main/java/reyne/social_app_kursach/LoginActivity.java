@@ -19,6 +19,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -34,8 +35,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Set;
 
+import okhttp3.Interceptor;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -45,10 +48,12 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+import reyne.social_app_kursach.api_retrofit.CheckApi;
 import reyne.social_app_kursach.api_retrofit.LoginApi;
 import reyne.social_app_kursach.model.User;
 import reyne.social_app_kursach.oauth.OAuthServer;
 import reyne.social_app_kursach.oauth.OAuthToken;
+import reyne.social_app_kursach.services_retrofit.BaseServiceGenerator;
 import reyne.social_app_kursach.services_retrofit.LoginServiceGenerator;
 
 public class LoginActivity extends AppCompatActivity {
@@ -143,15 +148,46 @@ public class LoginActivity extends AppCompatActivity {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
+        TextView textView = findViewById(R.id.textView);
         if(requestCode==1000){
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
             try {
                 GoogleSignInAccount account = task.getResult(ApiException.class);
                 Log.i("ef",  account.getEmail());
                 Log.i("ef", account.getDisplayName());
-                Log.i("ef", account.getIdToken());
-                Log.i("ef", account.getServerAuthCode());
+                Log.i("i need this session token", account.getIdToken());
+                Log.i("tfyguhijok", account.getServerAuthCode());
                 Toast.makeText(this, "Welcome. You logged in as: "+ account.getDisplayName()+"("+ account.getEmail()+")", Toast.LENGTH_SHORT).show();
+
+//                OkHttpClient okHttpClient = new OkHttpClient().newBuilder().addInterceptor(new Interceptor() {
+//                    @Override
+//                    public okhttp3.Response intercept(Chain chain) throws IOException {
+//                        Request originalRequest = chain.request();
+//
+//                        Request.Builder builder = originalRequest.newBuilder().header("Authorization",account.getIdToken());
+//
+//                        Request newRequest = builder.build();
+//                        return chain.proceed(newRequest);
+//                    }
+//                }).build();
+//                Retrofit retrofit = new Retrofit.Builder()
+//                        .baseUrl("https://ruby-4-pinb.herokuapp.com/")
+//                        .client(okHttpClient)
+//                        .addConverterFactory(GsonConverterFactory.create())
+//                        .build();
+//
+//                CheckApi api = BaseServiceGenerator.getStackOverflowAPI();
+//                Call<User> questions = api.getAnswer();
+//                try {
+//                    Response<User> execute = questions.execute();
+//                    User body = execute.body();
+//                    String item = body.getFull_name();
+//                    textView.setText(item);
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+
+
 
             } catch (ApiException e) {
                 // refer to the GoogleSignInStatusCodes class reference for more information.

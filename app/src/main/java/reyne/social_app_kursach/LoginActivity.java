@@ -7,18 +7,15 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.app.Activity;
+
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
-import android.os.AsyncTask;
+
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,33 +25,28 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.crashlytics.buildtools.reloc.org.apache.http.HttpResponse;
+import com.google.firebase.crashlytics.buildtools.reloc.org.apache.http.NameValuePair;
+import com.google.firebase.crashlytics.buildtools.reloc.org.apache.http.client.ClientProtocolException;
+import com.google.firebase.crashlytics.buildtools.reloc.org.apache.http.client.HttpClient;
+import com.google.firebase.crashlytics.buildtools.reloc.org.apache.http.client.entity.UrlEncodedFormEntity;
+import com.google.firebase.crashlytics.buildtools.reloc.org.apache.http.client.methods.HttpPost;
+import com.google.firebase.crashlytics.buildtools.reloc.org.apache.http.impl.client.DefaultHttpClient;
+import com.google.firebase.crashlytics.buildtools.reloc.org.apache.http.message.BasicNameValuePair;
+import com.google.firebase.crashlytics.buildtools.reloc.org.apache.http.util.EntityUtils;
+import com.squareup.okhttp.Callback;
+import com.squareup.okhttp.FormEncodingBuilder;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.RequestBody;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Set;
 
-import okhttp3.Interceptor;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
-import reyne.social_app_kursach.api_retrofit.CheckApi;
-import reyne.social_app_kursach.api_retrofit.LoginApi;
-import reyne.social_app_kursach.model.User;
-import reyne.social_app_kursach.oauth.OAuthServer;
-import reyne.social_app_kursach.oauth.OAuthToken;
-import reyne.social_app_kursach.services_retrofit.BaseServiceGenerator;
-import reyne.social_app_kursach.services_retrofit.LoginServiceGenerator;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -63,6 +55,7 @@ public class LoginActivity extends AppCompatActivity {
     private static final String OAUTH_SCOPE = "https://www.googleapis.com/auth/cloud-platform";
     private static final String CODE = "code";
     static final String CLIENT_ID = "1089113857854-fiv9uuplintt8jm2la1986ld8hpc2kbf.apps.googleusercontent.com";
+    static final String CLIENT_SECRET ="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";
     private static final String REDIRECT_URI = "https://ruby-4-pinb.herokuapp.com/auth/google_oauth2/callback";
 
     //Authorization
@@ -158,6 +151,56 @@ public class LoginActivity extends AppCompatActivity {
                 Log.i("i need this session token", account.getIdToken());
                 Log.i("tfyguhijok", account.getServerAuthCode());
                 Toast.makeText(this, "Welcome. You logged in as: "+ account.getDisplayName()+"("+ account.getEmail()+")", Toast.LENGTH_SHORT).show();
+
+
+                HttpClient httpClient = new DefaultHttpClient();
+                HttpPost httpPost = new HttpPost("https://ruby-4-pinb.herokuapp.com/login");
+
+                try {
+                    List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
+                    nameValuePairs.add(new BasicNameValuePair("idToken", account.getIdToken()));
+                    httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+
+                    HttpResponse response = httpClient.execute(httpPost);
+                    int statusCode = response.getStatusLine().getStatusCode();
+                    final String responseBody = EntityUtils.toString(response.getEntity());
+                    Log.i("LOGGSS", "Signed in as: " + responseBody);
+                } catch (ClientProtocolException e) {
+                    Log.e("LOGGSS", "Error sending ID token to backend.", e);
+                } catch (IOException e) {
+                    Log.e("LOGGSS", "Error sending ID token to backend.", e);
+                }
+//                OkHttpClient client = new OkHttpClient();
+//                RequestBody requestBody = new FormEncodingBuilder()
+//                        .add("grant_type", "authorization_code")
+//                        .add("client_id", CLIENT_ID)
+//                        .add("client_secret", CLIENT_SECRET)
+//                        .add("redirect_uri",REDIRECT_URI)
+//                        .add("code", Objects.requireNonNull(account.getServerAuthCode()))
+//                        .build();
+//                final Request request = new Request.Builder()
+//                        .url("https://ruby-4-pinb.herokuapp.com/users/sign_in").post(requestBody).build();
+//                client.newCall(request).enqueue(new Callback() {
+//                    @Override
+//                    public void onFailure(Request request, IOException e) {
+//                        Log.e("aaaaaaaaaaaaa", e.toString());
+//                    }
+//
+//                    @Override
+//                    public void onResponse(com.squareup.okhttp.Response response) throws IOException {
+//                        String message =response.body().string();
+//                        //final String message = jsonObject.toString(5);
+//                        Log.i("aaaaaaaaa", message);
+//                        Log.i("requ","w4");
+//                        //textView.setText(message);
+//                    }
+//
+//                });
+
+
+
+
+
 
 //                OkHttpClient okHttpClient = new OkHttpClient().newBuilder().addInterceptor(new Interceptor() {
 //                    @Override

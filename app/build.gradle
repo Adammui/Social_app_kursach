@@ -39,12 +39,17 @@ dependencies {
     implementation 'androidx.navigation:navigation-fragment:2.4.1'
     implementation 'androidx.navigation:navigation-ui:2.4.1'
 
+    // https://mvnrepository.com/artifact/com.google.oauth-client/google-oauth-client-servlet
+    //implementation group: 'com.google.oauth-client', name: 'google-oauth-client-servlet', version: '1.33.3'
+    //implementation group: 'com.google.apis', name: 'google-api-services-oauth2', version: 'v2-rev157-1.25.0'
     implementation 'com.google.android.gms:play-services-auth:20.0.0'
     implementation 'com.google.code.gson:gson:2.8.5'
+    implementation 'com.squareup.okhttp:okhttp:2.6.0'
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
     implementation 'com.github.bumptech.glide:glide:4.11.0'
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
+    implementation 'com.google.firebase:firebase-crashlytics-buildtools:2.8.1'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.11.0'
 
     testImplementation 'junit:junit:4.+'

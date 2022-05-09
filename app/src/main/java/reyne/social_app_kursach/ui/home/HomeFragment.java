@@ -19,7 +19,6 @@ import reyne.social_app_kursach.model.Current_user;
 
 public class HomeFragment extends Fragment {
 
-
   //  private FragmentHomeBinding binding;
 
     Context thiscontext;
@@ -43,24 +42,20 @@ public class HomeFragment extends Fragment {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode==1000){
-
-            if( Current_user.getCurrentUser()!=null) {
-                TextView username = getView().findViewById(R.id.username);
-                username.setText(Current_user.getCurrentUser().getLogin());
-                TextView email = getView().findViewById(R.id.email);
-                email.setText(Current_user.getCurrentUser().getEmail());
-                TextView full_name = getView().findViewById(R.id.fullname);
-                full_name.setText(Current_user.getCurrentUser().getFul_name());
-                Toast.makeText(getActivity(), "d", Toast.LENGTH_SHORT).show();
-
-            }
-            }
-
+        if(requestCode==1000){ fill_user(); }
     }
     @Override
     public void onResume() {
         super.onResume();
+        fill_user();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+       // binding = null;
+    }
+    public void fill_user(){
         if( Current_user.getCurrentUser()!=null) {
             TextView username = getView().findViewById(R.id.username);
             username.setText(Current_user.getCurrentUser().getLogin());
@@ -68,14 +63,7 @@ public class HomeFragment extends Fragment {
             email.setText(Current_user.getCurrentUser().getEmail());
             TextView full_name = getView().findViewById(R.id.fullname);
             full_name.setText(Current_user.getCurrentUser().getFul_name());
-            Toast.makeText(getActivity(), "d", Toast.LENGTH_SHORT).show();
 
         }
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-       // binding = null;
     }
 }

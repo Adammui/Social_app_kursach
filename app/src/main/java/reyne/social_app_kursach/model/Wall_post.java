@@ -7,13 +7,12 @@ public class Wall_post {
     private String img;
     private String created_at;
     private String updated_at;
-    private String url;
-    public Wall_post(String text, int user_id, String url, String image)
+    public Wall_post(int id ,int user_id,String text,  String image)
     {
+        this.id= id;
         this.text = text;
         this.user_id = user_id;
         this.img = image;
-        this.url = url;
     }
 
     public String getUpdated_at() {
@@ -56,10 +55,6 @@ public class Wall_post {
         this.text = text;
     }
 
-    public void setUrl(String text) {
-        this.url = url;
-    }
-
     public int getUser_id() {
         return user_id;
     }
@@ -68,7 +63,4 @@ public class Wall_post {
         return text;
     }
 
-    public String getUrl() {
-        return url;
-    }
 }

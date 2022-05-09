@@ -4,9 +4,12 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -80,6 +83,36 @@ public class Adaptery extends RecyclerView.Adapter<Adaptery.MyViewHolder> {
                           }
                       }
         );
+        holder.viewoption.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                //creating a popup menu
+                PopupMenu popup = new PopupMenu(mContext, holder.viewoption);
+                popup.inflate(R.menu.options_menu);
+                popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem item) {
+                        switch (item.getItemId()) {
+                            case R.id.update:
+                                //handle menu1 click
+                                return true;
+                            case R.id.delete:
+                                //handle menu2 click
+                                return true;
+                            case R.id.save:
+                                //handle menu3 click
+                                return true;
+                            default:
+                                return false;
+                        }
+                    }
+                });
+                //displaying the popup
+                popup.show();
+
+            }
+        });
         //String temp =  post.setUser_id( users_list.get(Integer.parseInt( post.getUser_id())).getUser_name()); String.valueOf( wall_posts_list.get(position).getUser_id());
         //holder.user.setText(temp);
         //Glide.with(mContext)
@@ -96,12 +129,13 @@ public class Adaptery extends RecyclerView.Adapter<Adaptery.MyViewHolder> {
     public static class MyViewHolder extends RecyclerView.ViewHolder{
         TextView text, user;
         ImageView image;
-
+        Button viewoption;
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
 
             text = itemView.findViewById(R.id.text);
             user = itemView.findViewById(R.id.user);
+            viewoption = itemView.findViewById(R.id.view_options);
             //image = itemView.findViewById(R.id.image);
         }
     }

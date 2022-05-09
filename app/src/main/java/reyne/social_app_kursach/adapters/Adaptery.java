@@ -67,7 +67,7 @@ public class Adaptery extends RecyclerView.Adapter<Adaptery.MyViewHolder> {
                               for(User u: users){
                                   if (u.getId()== wall_posts_list.get(position).getUser_id())
                                   {
-                                      holder.user.setText(u.getFull_name());
+                                      holder.user.setText(u.getLogin());
                                   }
                                   else
                                       Log.d("","eeror "+String.valueOf(u.getId()+"   "+wall_posts_list.get(position).getUser_id()));

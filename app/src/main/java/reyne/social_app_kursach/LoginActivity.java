@@ -1,10 +1,5 @@
 package reyne.social_app_kursach;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 
@@ -12,44 +7,26 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 
+import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInClient;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.common.api.ApiException;
-import com.google.android.gms.tasks.OnCompleteListener;
-
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.crashlytics.buildtools.reloc.org.apache.http.HttpResponse;
-import com.google.firebase.crashlytics.buildtools.reloc.org.apache.http.NameValuePair;
-import com.google.firebase.crashlytics.buildtools.reloc.org.apache.http.client.ClientProtocolException;
-import com.google.firebase.crashlytics.buildtools.reloc.org.apache.http.client.HttpClient;
-import com.google.firebase.crashlytics.buildtools.reloc.org.apache.http.client.entity.UrlEncodedFormEntity;
-import com.google.firebase.crashlytics.buildtools.reloc.org.apache.http.client.methods.HttpPost;
-import com.google.firebase.crashlytics.buildtools.reloc.org.apache.http.impl.client.DefaultHttpClient;
-import com.google.firebase.crashlytics.buildtools.reloc.org.apache.http.message.BasicNameValuePair;
-import com.google.firebase.crashlytics.buildtools.reloc.org.apache.http.util.EntityUtils;
-import com.squareup.okhttp.Callback;
-import com.squareup.okhttp.FormEncodingBuilder;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.RequestBody;
-
-import java.io.IOException;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+import reyne.social_app_kursach.api_retrofit.LoginApi;
+import reyne.social_app_kursach.model.Current_user;
+import reyne.social_app_kursach.model.User;
 
 public class LoginActivity extends AppCompatActivity {
 
+    public Current_user Cur_user;
     //todo: а тут убрать ненужное
     //From Google Cloud Console
     private static final String OAUTH_SCOPE = "https://www.googleapis.com/auth/cloud-platform";
@@ -68,27 +45,6 @@ public class LoginActivity extends AppCompatActivity {
     static String Refreshtoken;
     static Long Expiresin, ExpiryTime;
 
-    public void  saveData(){
-        //todo: вписать сюда данные юзера
-        SharedPreferences.Editor sharedPref = getSharedPreferences("authInfo", Context.MODE_PRIVATE).edit();
-        sharedPref.putString("AuthCode", AUTHORIZATION_CODE);
-        sharedPref.putString("secCode", Authcode);
-        sharedPref.putString("refresh", Refreshtoken);
-        sharedPref.putLong("expiry", ExpiryTime);
-        sharedPref.apply();
-
-    }
-    public void loadData(){
-        //todo: а сюда получается тоже чтобы они восстанавливались в прилаге
-        //Call loadData(); in onCreate(); method.
-        // Now that app is successfully Authorized,
-        // we can make API calls using Authorization Code
-        SharedPreferences sharedPref = getSharedPreferences("authInfo",Context.MODE_PRIVATE);
-        AUTHORIZATION_CODE = sharedPref.getString("AuthCode", "");
-        Authcode = sharedPref.getString("secCode", "");
-        Refreshtoken = sharedPref.getString("refresh","");
-        ExpiryTime = sharedPref.getLong("expiry",0);
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,43 +52,91 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
         Button btnLogin = (Button) findViewById(R.id.login);
         Button btnLogout = (Button) findViewById(R.id.logout);
-
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestEmail()
-                .requestServerAuthCode(CLIENT_ID)
-                .requestIdToken(CLIENT_ID)
-                .requestProfile()
-                .build();
-        GoogleSignInClient mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
-
-        ActivityResultLauncher activityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
-            @Override
-            public void onActivityResult(ActivityResult result) {
-
-            }}
-            );
+        EditText email_textbox = findViewById(R.id.editTextEmail);
+        EditText password_textbox = findViewById(R.id.editTextTextPassword);
+        TextView textView = findViewById(R.id.textView);
+//-----
+//        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+//                .requestEmail()
+//                .requestServerAuthCode(CLIENT_ID)
+//                .requestIdToken(CLIENT_ID)
+//                .requestProfile()
+//                .build();
+//        GoogleSignInClient mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
+//
+//        ActivityResultLauncher activityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
+//            @Override
+//            public void onActivityResult(ActivityResult result) {
+//
+//            }}
+//            );
+        //-----
         btnLogin.setOnClickListener(
                 new View.OnClickListener() {
                     @Override
                 public void onClick(View v) {
-                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                        Retrofit retrofit = new Retrofit.Builder()
+                                .baseUrl("https://ruby-4-pinb.herokuapp.com/")
+                                .addConverterFactory(GsonConverterFactory.create())
+                                .build();
+                        LoginApi loginapi = retrofit.create(LoginApi.class);
+                        Call<User> call = loginapi.GetToken(email_textbox.getText().toString(), password_textbox.getText().toString());
+                        call.enqueue(new Callback<User>()
+                                     {
+                                         @Override
+                                         public void onResponse(Call<User> call, Response<User> response) {
+
+                                             if(response.isSuccessful()) {
+                                                 assert response.body() != null;
+                                                 Current_user Current_user = new Current_user(
+                                                         response.body().getId(),
+                                                         response.body().getLogin(),
+                                                         response.body().getFul_name(),
+                                                         response.body().getEmail(),
+                                                         response.body().getAuth_token());
+                                                 Toast.makeText(getApplicationContext(), "Now loggined in as "+Current_user.getEmail(), Toast.LENGTH_SHORT).show();
+                                                 Intent data = new Intent();
+                                                 data.setData(Uri.parse("eg"));
+                                                 setResult(RESULT_OK, data);
+                                                 finish();
+                                                 //
+                                             }
+                                             else{
+                                                 Toast.makeText(getApplicationContext(), "aaaaaaaшибка", Toast.LENGTH_SHORT).show();
+                                             }
+                                         }
+
+                                         @Override
+                                         public void onFailure(Call<User> call, Throwable t) {
+                                             Toast.makeText(getApplicationContext(), "Eror on logging. Check your internet connection", Toast.LENGTH_SHORT).show();
+
+                                         }
+
+                                     }
+                        );
+
+
+
+
+                    //Intent intent = new Intent(Intent.ACTION_VIEW);
                     //intent.setData(Uri.parse("https://accounts.google.com/o/oauth2/auth"+ "?access_type=offline" + "&client_id=" + CLIENT_ID + "&response_type=" + CODE + "&redirect_uri=" + REDIRECT_URI + "&scope=" + OAUTH_SCOPE));
                     //activityResultLauncher.launch(intent);
-                    Intent signInIntent = mGoogleSignInClient.getSignInIntent();
-                    startActivityForResult(signInIntent, 1000);
+                    //---Intent signInIntent = mGoogleSignInClient.getSignInIntent();
+                    //---startActivityForResult(signInIntent, 1000);
                     }
                 });
         btnLogout.setOnClickListener(
                 new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    mGoogleSignInClient.signOut().addOnCompleteListener(new OnCompleteListener<Void>() {
-                        @Override
-                        public void onComplete(@NonNull Task<Void> task) {
-                            finish();
-                            Toast.makeText(LoginActivity.this, "You are now logged out of your account",Toast.LENGTH_LONG).show();
-                        }
-                    });
+                    //----
+//                    mGoogleSignInClient.signOut().addOnCompleteListener(new OnCompleteListener<Void>() {
+//                        @Override
+//                        public void onComplete(@NonNull Task<Void> task) {
+//                            finish();
+//                            Toast.makeText(LoginActivity.this, "You are now logged out of your account",Toast.LENGTH_LONG).show();
+//                        }
+//                    });
                 }
             });
     }
@@ -140,36 +144,38 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        //---google token auth
+//        if(requestCode==1000){
+//            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+//            try {
+//                GoogleSignInAccount account = task.getResult(ApiException.class);
+//                Log.i("ef",  account.getEmail());
+//                Log.i("ef", account.getDisplayName());
+//                Log.i("i need this session token", account.getIdToken());
+//                Log.i("tfyguhijok", account.getServerAuthCode());
+//                Toast.makeText(this, "Welcome. You logged in as: "+ account.getDisplayName()+"("+ account.getEmail()+")", Toast.LENGTH_SHORT).show();
+//
+//
+//                HttpClient httpClient = new DefaultHttpClient();
+//                HttpPost httpPost = new HttpPost("https://ruby-4-pinb.herokuapp.com/login");
+//
+//                try {
+//                    List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
+//                    nameValuePairs.add(new BasicNameValuePair("idToken", account.getIdToken()));
+//                    httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+//
+//                    HttpResponse response = httpClient.execute(httpPost);
+//                    int statusCode = response.getStatusLine().getStatusCode();
+//                    final String responseBody = EntityUtils.toString(response.getEntity());
+//                    Log.i("LOGGSS", "Signed in as: " + responseBody);
+//                } catch (ClientProtocolException e) {
+//                    Log.e("LOGGSS", "Error sending ID token to backend.", e);
+//                } catch (IOException e) {
+//                    Log.e("LOGGSS", "Error sending ID token to backend.", e);
+//                }
 
-        TextView textView = findViewById(R.id.textView);
-        if(requestCode==1000){
-            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
-            try {
-                GoogleSignInAccount account = task.getResult(ApiException.class);
-                Log.i("ef",  account.getEmail());
-                Log.i("ef", account.getDisplayName());
-                Log.i("i need this session token", account.getIdToken());
-                Log.i("tfyguhijok", account.getServerAuthCode());
-                Toast.makeText(this, "Welcome. You logged in as: "+ account.getDisplayName()+"("+ account.getEmail()+")", Toast.LENGTH_SHORT).show();
 
-
-                HttpClient httpClient = new DefaultHttpClient();
-                HttpPost httpPost = new HttpPost("https://ruby-4-pinb.herokuapp.com/login");
-
-                try {
-                    List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
-                    nameValuePairs.add(new BasicNameValuePair("idToken", account.getIdToken()));
-                    httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-
-                    HttpResponse response = httpClient.execute(httpPost);
-                    int statusCode = response.getStatusLine().getStatusCode();
-                    final String responseBody = EntityUtils.toString(response.getEntity());
-                    Log.i("LOGGSS", "Signed in as: " + responseBody);
-                } catch (ClientProtocolException e) {
-                    Log.e("LOGGSS", "Error sending ID token to backend.", e);
-                } catch (IOException e) {
-                    Log.e("LOGGSS", "Error sending ID token to backend.", e);
-                }
+        //----------ends here
 //                OkHttpClient client = new OkHttpClient();
 //                RequestBody requestBody = new FormEncodingBuilder()
 //                        .add("grant_type", "authorization_code")
@@ -231,12 +237,13 @@ public class LoginActivity extends AppCompatActivity {
 //                }
 
 
-
-            } catch (ApiException e) {
-                // refer to the GoogleSignInStatusCodes class reference for more information.
-                Log.w("ef", "TAG:failed code=" + e.getStatusCode());
-                Toast.makeText(this, ":" + e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
-            }
-        }
+            //---
+//            } catch (ApiException e) {
+//                // refer to the GoogleSignInStatusCodes class reference for more information.
+//                Log.w("ef", "TAG:failed code=" + e.getStatusCode());
+//                Toast.makeText(this, ":" + e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+//            }
+            //-------
+       // }
     }
 }

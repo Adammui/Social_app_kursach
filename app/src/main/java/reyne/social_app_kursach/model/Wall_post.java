@@ -4,15 +4,14 @@ public class Wall_post {
     private int id;
     private int user_id;
     private String text;
-    private String img;
+    private Image image;
     private String created_at;
     private String updated_at;
-    public Wall_post(int id ,int user_id,String text,  String image)
+    public Wall_post(int id ,int user_id, String text)
     {
         this.id= id;
         this.text = text;
         this.user_id = user_id;
-        this.img = image;
     }
 
     public String getUpdated_at() {
@@ -31,12 +30,12 @@ public class Wall_post {
         this.created_at = created_at;
     }
 
-    public String getImg() {
-        return img;
+    public Image getImage() {
+        return image;
     }
 
-    public void setImg(String img) {
-        this.img = img;
+    public void setImage(Image image) {
+        this.image = image;
     }
 
     public int getId() {

@@ -105,19 +105,12 @@ public class LoginActivity extends AppCompatActivity {
                                                  Toast.makeText(getApplicationContext(), "aaaaaaaшибка", Toast.LENGTH_SHORT).show();
                                              }
                                          }
-
                                          @Override
                                          public void onFailure(Call<User> call, Throwable t) {
                                              Toast.makeText(getApplicationContext(), "Eror on logging. Check your internet connection", Toast.LENGTH_SHORT).show();
-
                                          }
-
                                      }
                         );
-
-
-
-
                     //Intent intent = new Intent(Intent.ACTION_VIEW);
                     //intent.setData(Uri.parse("https://accounts.google.com/o/oauth2/auth"+ "?access_type=offline" + "&client_id=" + CLIENT_ID + "&response_type=" + CODE + "&redirect_uri=" + REDIRECT_URI + "&scope=" + OAUTH_SCOPE));
                     //activityResultLauncher.launch(intent);

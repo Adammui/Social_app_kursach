@@ -4,7 +4,7 @@ plugins {
 
 android {
     compileSdk 31
-
+    buildToolsVersion "29.0.2"
     defaultConfig {
         applicationId "reyne.social_app_kursach"
         minSdk 29
@@ -30,9 +30,11 @@ android {
     }
 }
 dependencies {
-
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'androidx.appcompat:appcompat:1.4.1'
     implementation 'com.google.android.material:material:1.5.0'
+    implementation 'androidx.recyclerview:recyclerview:1.1.0'
+    implementation 'com.squareup.okhttp3:okhttp:3.14.9'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.3'
     implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.4.1'
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.1'

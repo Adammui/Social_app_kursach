@@ -44,6 +44,7 @@ import reyne.social_app_kursach.api_retrofit.PostApi;
 import reyne.social_app_kursach.api_retrofit.UserApi;
 import reyne.social_app_kursach.api_retrofit.WallApi;
 import reyne.social_app_kursach.model.Current_user;
+import reyne.social_app_kursach.model.Image;
 import reyne.social_app_kursach.model.User;
 import reyne.social_app_kursach.model.Wall_post;
 
@@ -83,11 +84,13 @@ public class DashboardFragment extends Fragment {
         Button open_menu_add = view.findViewById(R.id.openmenu);
         Button close_menu_add = view.findViewById(R.id.closemenu);
         EditText text_field = view.findViewById(R.id.editText);
+        EditText image_field = view.findViewById(R.id.editImage);
         Button add_post = view.findViewById(R.id.add);
         open_menu_add.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 text_field.setVisibility(View.VISIBLE);
+                image_field.setVisibility(View.VISIBLE);
                 add_post.setVisibility(View.VISIBLE);
                 close_menu_add.setVisibility(View.VISIBLE);
                 open_menu_add.setVisibility(View.GONE);
@@ -97,6 +100,7 @@ public class DashboardFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 text_field.setVisibility(View.GONE);
+                image_field.setVisibility(View.GONE);
                 add_post.setVisibility(View.GONE);
                 close_menu_add.setVisibility(View.GONE);
                 open_menu_add.setVisibility(View.VISIBLE);
@@ -113,7 +117,7 @@ public class DashboardFragment extends Fragment {
                 PostApi postapi = retrofit.create(PostApi.class);
                 Call<Wall_post> call = postapi.CreatePost(
                         Current_user.getCurrentUser().getEmail(), Current_user.getCurrentUser().getAuth_token(),
-                        String.valueOf(text_field.getText()), Current_user.getCurrentUser().getId(), null);
+                        String.valueOf(text_field.getText()), Current_user.getCurrentUser().getId(), String.valueOf(image_field.getText()));
                 call.enqueue(new Callback<Wall_post>()
                              {
                                  @Override

@@ -4,6 +4,7 @@ import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
+import reyne.social_app_kursach.model.Image;
 import reyne.social_app_kursach.model.User;
 import reyne.social_app_kursach.model.Wall_post;
 
@@ -15,7 +16,7 @@ public interface PostApi {
 
                                 @Query("advertisement[text]")String advertisement_text,
                                 @Query("advertisement[user_id]") int user_id,
-                                @Query("advertisement[image]") String image
+                                @Query("advertisement[image][url]") String url
     );
     @GET("update_post")
     Call<Wall_post> UpdatePost( @Query("user_email") String email,
@@ -24,6 +25,6 @@ public interface PostApi {
 
                                 @Query("advertisement[text]")String advertisement_text,
                                 @Query("advertisement[user_id]") int user_id,
-                                @Query("advertisement[image]") String image
+                                @Query("advertisement[image][url]") String url
     );
 }

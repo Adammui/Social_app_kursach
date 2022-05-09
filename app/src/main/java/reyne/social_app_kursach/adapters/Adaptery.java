@@ -16,6 +16,9 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+
+import java.net.URLDecoder;
 import java.util.List;
 
 import retrofit2.Call;
@@ -24,7 +27,9 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import reyne.social_app_kursach.R;
+import reyne.social_app_kursach.api_retrofit.PostApi;
 import reyne.social_app_kursach.api_retrofit.UserApi;
+import reyne.social_app_kursach.model.Current_user;
 import reyne.social_app_kursach.model.User;
 import reyne.social_app_kursach.model.Wall_post;
 
@@ -32,12 +37,12 @@ public class Adaptery extends RecyclerView.Adapter<Adaptery.MyViewHolder> {
 
     private Context mContext;
     private List<Wall_post> wall_posts_list;
+    private int id_of_post;
 
     public Adaptery(Context mContext, List<Wall_post> wall_posts_list)
     {
         this.mContext = mContext;
         this.wall_posts_list = wall_posts_list;
-
     }
 
     @NonNull
@@ -47,12 +52,26 @@ public class Adaptery extends RecyclerView.Adapter<Adaptery.MyViewHolder> {
         LayoutInflater layoutInflater = LayoutInflater.from(mContext);
         v = layoutInflater.inflate(R.layout.wall_post_item, parent, false);
         return new MyViewHolder(v);
-
     }
 
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder holder, @SuppressLint("RecyclerView") int position) {
         holder.text.setText(wall_posts_list.get(position).getText());
+        try
+        {
+            if(wall_posts_list.get(position).getImage().getUrl()!=null) {
+                Log.d("afes", wall_posts_list.get(position).getImage().getUrl() + "");
+                //phone
+                Glide.with(mContext).load(wall_posts_list.get(position).getImage().getUrl()).into(holder.image);
+                //pc
+                Glide.with(mContext).load("https://ruby-4-pinb.herokuapp.com"
+                        + wall_posts_list.get(position).getImage().getUrl() + "?user_email=" + Current_user.getCurrentUser().getEmail() + "&user_token=" + Current_user.getCurrentUser().getAuth_token()).into(holder.image);
+            }
+        }
+        catch (Exception e)
+        {
+            Log.d("error loading image maybe its empty",e.getLocalizedMessage());
+        }
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://ruby-4-pinb.herokuapp.com/")
                 .addConverterFactory(GsonConverterFactory.create())
@@ -72,8 +91,6 @@ public class Adaptery extends RecyclerView.Adapter<Adaptery.MyViewHolder> {
                                   {
                                       holder.user.setText(u.getLogin());
                                   }
-                                  else
-                                      Log.d("","eeror "+String.valueOf(u.getId()+"   "+wall_posts_list.get(position).getUser_id()));
                               }
                           }
                           @Override
@@ -83,6 +100,39 @@ public class Adaptery extends RecyclerView.Adapter<Adaptery.MyViewHolder> {
                           }
                       }
         );
+        holder.save.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Retrofit retrofit = new Retrofit.Builder()
+                        .baseUrl("https://ruby-4-pinb.herokuapp.com/")
+                        .addConverterFactory(GsonConverterFactory.create())
+                        .build();
+                PostApi postapi = retrofit.create(PostApi.class);
+                Call<Wall_post> call = postapi.UpdatePost(
+                        Current_user.getCurrentUser().getEmail(), Current_user.getCurrentUser().getAuth_token(),
+                        wall_posts_list.get(position).getId(),
+                        String.valueOf(holder.edit.getText()), Current_user.getCurrentUser().getId(), null);
+                call.enqueue(new Callback<Wall_post>() {
+                                 @Override
+                                 public void onResponse(Call<Wall_post> call, Response<Wall_post> response) {
+                                     Log.d("", "" + response.code());
+                                     if (call.isExecuted()) {
+                                         holder.text.setText(holder.edit.getText());
+                                         holder.edit.setVisibility(View.GONE);
+                                         holder.save.setVisibility(View.INVISIBLE);
+                                         holder.text.setVisibility(View.VISIBLE);
+                                         Toast.makeText(mContext, "Edited  ^)", Toast.LENGTH_SHORT).show();
+                                     }
+                                 }
+
+                                 @Override
+                                 public void onFailure(Call<Wall_post> call, Throwable t) {
+                                     Toast.makeText(mContext, "Eror. Check your internet connection", Toast.LENGTH_SHORT).show();
+                                     Log.d("",""+t.getLocalizedMessage());
+                                 }
+                             }
+                );
+            }});
         holder.viewoption.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -94,8 +144,14 @@ public class Adaptery extends RecyclerView.Adapter<Adaptery.MyViewHolder> {
                     @Override
                     public boolean onMenuItemClick(MenuItem item) {
                         switch (item.getItemId()) {
-                            case R.id.update:
-                                //handle menu1 click
+                            case R.id.update: {
+                                holder.edit.setText(holder.text.getText());
+                                holder.edit.setVisibility(View.VISIBLE);
+                                holder.save.setVisibility(View.VISIBLE);
+                                holder.text.setVisibility(View.GONE);
+                                id_of_post=item.getItemId();
+                                Log.d("syjc",position+"");
+                            }
                                 return true;
                             case R.id.delete:
                                 //handle menu2 click
@@ -113,6 +169,7 @@ public class Adaptery extends RecyclerView.Adapter<Adaptery.MyViewHolder> {
 
             }
         });
+
         //String temp =  post.setUser_id( users_list.get(Integer.parseInt( post.getUser_id())).getUser_name()); String.valueOf( wall_posts_list.get(position).getUser_id());
         //holder.user.setText(temp);
         //Glide.with(mContext)
@@ -127,14 +184,16 @@ public class Adaptery extends RecyclerView.Adapter<Adaptery.MyViewHolder> {
     }
 
     public static class MyViewHolder extends RecyclerView.ViewHolder{
-        TextView text, user;
+        TextView text, user,edit;
         ImageView image;
-        Button viewoption;
+        Button viewoption, save;
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
-
+            image = itemView.findViewById(R.id.image);
+            edit = itemView.findViewById(R.id.editText);
             text = itemView.findViewById(R.id.text);
             user = itemView.findViewById(R.id.user);
+            save = itemView.findViewById(R.id.buttonsave);
             viewoption = itemView.findViewById(R.id.view_options);
             //image = itemView.findViewById(R.id.image);
         }

@@ -14,6 +14,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -46,7 +48,7 @@ import reyne.social_app_kursach.model.Current_user;
 
 public class NotificationsFragment extends Fragment implements TextWatcher {
     private WebSocket webSocket;
-    private String SERVER_PATH = "ws://192.168.43.113:3000";
+    private String SERVER_PATH = "https://chats-socket-server.herokuapp.com/";
     private EditText messageEdit;
     private View sendBtn, pickImgBtn;
     private RecyclerView recyclerView;
@@ -59,7 +61,29 @@ public class NotificationsFragment extends Fragment implements TextWatcher {
         view = inflater.inflate(R.layout.fragment_notifications, container, false);
         thiscontext = container.getContext();
         initiateSocketConnection();
+
+        messageEdit = view.findViewById(R.id.messageEdit);
+        sendBtn = view.findViewById(R.id.sendBtn);
+        pickImgBtn = view.findViewById(R.id.pickImgBtn);
+
+        recyclerView = view.findViewById(R.id.recyclerView);
+
+        messageEdit.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+
+                if(hasFocus){
+                    LinearLayout.LayoutParams lp =
+                            new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 900);
+                    recyclerView.setLayoutParams(lp);
+                }
+            }
+        });
+
         return view;
+
+
     }
 
     private void initiateSocketConnection() {
@@ -148,12 +172,6 @@ public class NotificationsFragment extends Fragment implements TextWatcher {
 
     private void initializeView() {
 
-        messageEdit = view.findViewById(R.id.messageEdit);
-        sendBtn = view.findViewById(R.id.sendBtn);
-        pickImgBtn = view.findViewById(R.id.pickImgBtn);
-
-        recyclerView = view.findViewById(R.id.recyclerView);
-
         messageAdapter = new MessageAdapter(getLayoutInflater());
         recyclerView.setAdapter(messageAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(thiscontext));
@@ -176,6 +194,10 @@ public class NotificationsFragment extends Fragment implements TextWatcher {
                 recyclerView.smoothScrollToPosition(messageAdapter.getItemCount() - 1);
 
                 resetMessageEdit();
+
+                LinearLayout.LayoutParams lp =
+                        new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 1500);
+                recyclerView.setLayoutParams(lp);
 
             } catch (JSONException e) {
                 e.printStackTrace();

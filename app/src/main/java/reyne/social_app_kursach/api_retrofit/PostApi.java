@@ -27,4 +27,9 @@ public interface PostApi {
                                 @Query("advertisement[user_id]") int user_id,
                                 @Query("advertisement[image][url]") String url
     );
+    @GET("delete_post")
+    Call<Wall_post> DeletePost( @Query("user_email") String email,
+                                @Query("user_token") String auth_token,
+                                @Query("id") int id
+    );
 }

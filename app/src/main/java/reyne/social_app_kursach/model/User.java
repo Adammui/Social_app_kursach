@@ -4,18 +4,27 @@ public class User {
 
     private int id;
     private String login;
-    private String ful_name;
+    private String full_name;
     private String email;
     private String auth_token;
+    private int role; //3=admin 2=moderator 1=regular
 
-    public User(int id, String login, String full_name, String email, String user_token)
+    public User(int id, String login, String full_name, String email, String user_token, int role)
     {
         this.login =login;
-        this.ful_name =full_name;
+        this.full_name =full_name;
         this.id =id;
         this.email =email;
         this.auth_token =user_token;
+        this.role = role;
 
+    }
+    public int getRole() {
+        return role;
+    }
+
+    public void setRole(int role) {
+        this.role = role;
     }
 
     public void setId(int id) {
@@ -30,12 +39,12 @@ public class User {
         this.auth_token = user_token;
     }
 
-    public String getFul_name() {
-        return ful_name;
+    public String getFull_name() {
+        return full_name;
     }
 
-    public void setFul_name(String ful_name) {
-        this.ful_name = ful_name;
+    public void setFull_name(String full_name) {
+        this.full_name = full_name;
     }
 
     public String getEmail() {

@@ -2,6 +2,7 @@ package reyne.social_app_kursach;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -28,9 +29,10 @@ public class MainScreen extends AppCompatActivity {
         Current_user.getCurrentUser();
         sharedPref.putInt("id", Current_user.getCurrentUser().getId());
         sharedPref.putString("login", Current_user.getCurrentUser().getLogin());
-        sharedPref.putString("full_name", Current_user.getCurrentUser().getFul_name());
+        sharedPref.putString("full_name", Current_user.getCurrentUser().getFull_name());
         sharedPref.putString("email", Current_user.getCurrentUser().getEmail());
         sharedPref.putString("auth_token", Current_user.getCurrentUser().getAuth_token());
+        sharedPref.putInt("role", Current_user.getCurrentUser().getRole());
         sharedPref.apply();
 
     }
@@ -40,10 +42,17 @@ public class MainScreen extends AppCompatActivity {
         // Now that app is successfully Authorized,
         // we can make API calls using Authorization Code
         SharedPreferences sharedPref = getSharedPreferences("authInfo",Context.MODE_PRIVATE);
-        new Current_user(
-                sharedPref.getInt("id",0), sharedPref.getString("login",""),
-                sharedPref.getString("full_name",""),sharedPref.getString("email",""),
-                sharedPref.getString("auth_token",""));
+        if(sharedPref.getString("email",null)==null)
+        {
+            Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
+            startActivity(intent);
+        }
+        else {
+            new Current_user(
+                    sharedPref.getInt("id", 0), sharedPref.getString("login", ""),
+                    sharedPref.getString("full_name", ""), sharedPref.getString("email", ""),
+                    sharedPref.getString("auth_token", ""), sharedPref.getInt("role", 0));
+        }
     }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,7 +60,6 @@ public class MainScreen extends AppCompatActivity {
 
         binding = ActivityMainScreenBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        loadData();
         BottomNavigationView navView = findViewById(R.id.nav_view);
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
@@ -64,25 +72,26 @@ public class MainScreen extends AppCompatActivity {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED)
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 10);
+        loadData();
 
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        saveData();
+        if(Current_user.getCurrentUser()!=null) saveData();
     }
 
     @Override
     protected void onRestart() {
         super.onRestart();
-        saveData();
+        if(Current_user.getCurrentUser()!=null) saveData();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        saveData();
+        if(Current_user.getCurrentUser()!=null) saveData();
     }
 
 }

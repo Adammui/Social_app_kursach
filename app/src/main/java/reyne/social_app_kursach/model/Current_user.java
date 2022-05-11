@@ -7,14 +7,14 @@ public class Current_user {
     public static User getCurrentUser() {
         return instance;
     }
-    public Current_user(int id, String login, String full_name, String email, String user_token) {
-        instance = new User(id,login,full_name,email, user_token);
+    public Current_user(int id, String login, String full_name, String email, String user_token, int role) {
+        instance = new User(id,login,full_name,email, user_token, role);
     }
 
     public String getAuth_token() { return instance.getAuth_token(); }
 
     public String getFull_name() {
-        return instance.getFul_name();
+        return instance.getFull_name();
     }
 
     public String getEmail() {

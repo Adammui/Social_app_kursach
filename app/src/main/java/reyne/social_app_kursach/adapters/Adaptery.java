@@ -3,7 +3,10 @@ package reyne.social_app_kursach.adapters;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -95,7 +98,7 @@ public class Adaptery extends RecyclerView.Adapter<Adaptery.MyViewHolder> {
                           }
                           @Override
                           public void onFailure(Call<List<User>> call, Throwable t) {
-                              Toast.makeText(mContext, "Eror on reading users", Toast.LENGTH_SHORT).show();
+                              Toast.makeText(mContext, "Eror on reading users", Toast.LENGTH_LONG).show();
                               Log.d("","eeror on reading users");
                           }
                       }
@@ -121,13 +124,13 @@ public class Adaptery extends RecyclerView.Adapter<Adaptery.MyViewHolder> {
                                          holder.edit.setVisibility(View.GONE);
                                          holder.save.setVisibility(View.INVISIBLE);
                                          holder.text.setVisibility(View.VISIBLE);
-                                         Toast.makeText(mContext, "Edited  ^)", Toast.LENGTH_SHORT).show();
+                                         Toast.makeText(mContext, "Edited  ^)", Toast.LENGTH_LONG).show();
                                      }
                                  }
 
                                  @Override
                                  public void onFailure(Call<Wall_post> call, Throwable t) {
-                                     Toast.makeText(mContext, "Eror. Check your internet connection", Toast.LENGTH_SHORT).show();
+                                     Toast.makeText(mContext, "Eror. Check your internet connection", Toast.LENGTH_LONG).show();
                                      Log.d("",""+t.getLocalizedMessage());
                                  }
                              }
@@ -136,25 +139,65 @@ public class Adaptery extends RecyclerView.Adapter<Adaptery.MyViewHolder> {
         holder.viewoption.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
                 //creating a popup menu
                 PopupMenu popup = new PopupMenu(mContext, holder.viewoption);
                 popup.inflate(R.menu.options_menu);
+                //listener of clicks
                 popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     @Override
                     public boolean onMenuItemClick(MenuItem item) {
                         switch (item.getItemId()) {
                             case R.id.update: {
+                                //banning buttons for users that cant use them
+                                if(Current_user.getCurrentUser().getId()==wall_posts_list.get(position).getUser_id() ||
+                                        Current_user.getCurrentUser().getRole()!=1) //admin can do everything and moder can delete and update posts
+                                {
                                 holder.edit.setText(holder.text.getText());
                                 holder.edit.setVisibility(View.VISIBLE);
                                 holder.save.setVisibility(View.VISIBLE);
                                 holder.text.setVisibility(View.GONE);
                                 id_of_post=item.getItemId();
-                                Log.d("syjc",position+"");
+                                Log.d("syjc ",position+"");
+                                }
+                                else Toast.makeText(mContext, "Only owner or moderator can update posts", Toast.LENGTH_LONG).show();
+
                             }
                                 return true;
                             case R.id.delete:
-                                //handle menu2 click
+                                if(Current_user.getCurrentUser().getId()==wall_posts_list.get(position).getUser_id() ||
+                                        Current_user.getCurrentUser().getRole()!=1) //admin can do everything and moder can delete and update posts
+                                {
+                                    Retrofit retrofit = new Retrofit.Builder()
+                                            .baseUrl("https://ruby-4-pinb.herokuapp.com/")
+                                            .addConverterFactory(GsonConverterFactory.create())
+                                            .build();
+                                    PostApi postapi = retrofit.create(PostApi.class);
+                                    Call<Wall_post> call = postapi.DeletePost(
+                                            Current_user.getCurrentUser().getEmail(), Current_user.getCurrentUser().getAuth_token(),
+                                            wall_posts_list.get(position).getId());
+                                    call.enqueue(new Callback<Wall_post>() {
+                                                     @Override
+                                                     public void onResponse(Call<Wall_post> call, Response<Wall_post> response) {
+                                                         Log.d("", "" + response.code());
+                                                         if (call.isExecuted()) {
+                                                             holder.image.setVisibility(View.GONE);
+                                                             holder.edit.setVisibility(View.GONE);
+                                                             holder.text.setVisibility(View.GONE);
+                                                             holder.user.setVisibility(View.GONE);
+                                                             holder.save.setVisibility(View.GONE);
+                                                             holder.viewoption.setVisibility(View.GONE);
+                                                             Toast.makeText(mContext, "Deleted  ^)", Toast.LENGTH_LONG).show();
+                                                         }
+                                                     }
+                                                     @Override
+                                                     public void onFailure(Call<Wall_post> call, Throwable t) {
+                                                         Toast.makeText(mContext, "Eror. Check your internet connection", Toast.LENGTH_LONG).show();
+                                                         Log.d("",""+t.getLocalizedMessage());
+                                                     }
+                                                 }
+                                    );
+                                }
+                                else Toast.makeText(mContext.getApplicationContext(), "Only owner or moderator can update posts", Toast.LENGTH_LONG).show();
                                 return true;
                             case R.id.save:
                                 //handle menu3 click
@@ -166,16 +209,8 @@ public class Adaptery extends RecyclerView.Adapter<Adaptery.MyViewHolder> {
                 });
                 //displaying the popup
                 popup.show();
-
             }
         });
-
-        //String temp =  post.setUser_id( users_list.get(Integer.parseInt( post.getUser_id())).getUser_name()); String.valueOf( wall_posts_list.get(position).getUser_id());
-        //holder.user.setText(temp);
-        //Glide.with(mContext)
-            //    .load(wall_posts_list.get(position).getImg())
-              //  .into(holder.image);
-
     }
 
     @Override
@@ -195,7 +230,6 @@ public class Adaptery extends RecyclerView.Adapter<Adaptery.MyViewHolder> {
             user = itemView.findViewById(R.id.user);
             save = itemView.findViewById(R.id.buttonsave);
             viewoption = itemView.findViewById(R.id.view_options);
-            //image = itemView.findViewById(R.id.image);
         }
     }
 }

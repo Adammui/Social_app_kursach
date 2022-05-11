@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity implements TextWatcher {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        name = Current_user.getCurrentUser().getFul_name();
+        name = Current_user.getCurrentUser().getFull_name();
         initiateSocketConnection();
 
     }

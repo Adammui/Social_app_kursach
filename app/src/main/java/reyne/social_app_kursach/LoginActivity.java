@@ -3,9 +3,7 @@ package reyne.social_app_kursach;
 import androidx.appcompat.app.AppCompatActivity;
 
 
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 
 import android.net.Uri;
 import android.os.Bundle;
@@ -91,10 +89,11 @@ public class LoginActivity extends AppCompatActivity {
                                                  Current_user Current_user = new Current_user(
                                                          response.body().getId(),
                                                          response.body().getLogin(),
-                                                         response.body().getFul_name(),
+                                                         response.body().getFull_name(),
                                                          response.body().getEmail(),
-                                                         response.body().getAuth_token());
-                                                 Toast.makeText(getApplicationContext(), "Now loggined in as "+Current_user.getEmail(), Toast.LENGTH_SHORT).show();
+                                                         response.body().getAuth_token(),
+                                                         response.body().getRole());
+                                                 Toast.makeText(getApplicationContext(), "Now loggined in as "+Current_user.getEmail(), Toast.LENGTH_LONG).show();
                                                  Intent data = new Intent();
                                                  data.setData(Uri.parse("eg"));
                                                  setResult(RESULT_OK, data);
@@ -102,12 +101,12 @@ public class LoginActivity extends AppCompatActivity {
                                                  //
                                              }
                                              else{
-                                                 Toast.makeText(getApplicationContext(), "aaaaaaaшибка", Toast.LENGTH_SHORT).show();
+                                                 Toast.makeText(getApplicationContext(), "aaaaaaaшибка", Toast.LENGTH_LONG).show();
                                              }
                                          }
                                          @Override
                                          public void onFailure(Call<User> call, Throwable t) {
-                                             Toast.makeText(getApplicationContext(), "Eror on logging. Check your internet connection", Toast.LENGTH_SHORT).show();
+                                             Toast.makeText(getApplicationContext(), "Eror on logging. Check your internet connection", Toast.LENGTH_LONG).show();
                                          }
                                      }
                         );

@@ -27,8 +27,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import java.lang.reflect.Array;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import retrofit2.Call;
@@ -53,6 +56,7 @@ public class DashboardFragment extends Fragment {
     Context thiscontext;
     List<Wall_post> wall_posts_list;
     RecyclerView recyclerView;
+    public long lastGathered;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -69,6 +73,7 @@ public class DashboardFragment extends Fragment {
                     public void onRefresh() {
                         Log.d("LOG", "onRefresh called from SwipeRefreshLayout");
                        update( mySwipeRefreshLayout);
+
                         mySwipeRefreshLayout.setRefreshing(false);
                     }
                 }
@@ -152,60 +157,63 @@ public class DashboardFragment extends Fragment {
     }
 
     private void update( SwipeRefreshLayout mySwipeRefreshLayout) {
-        wall_posts_list.clear();
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://ruby-4-pinb.herokuapp.com/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-        /*/users
-        users_list= new ArrayList<>();
-        UserApi userapi = retrofit.create(UserApi.class);
-        Call<List<User>> call1= userapi.getUsers();
-        call1.enqueue(new Callback<List<User>>()
-                      {
-                          @Override
-                          public void onResponse(Call<List<User>> call, Response<List<User>> response) {
-                              if(response.code()!=200)
-                                  return; //handle error
-                              List<User> users= response.body();
-                              for(User u: users){
-                                  users_list.add(u);
+        if (Calendar.getInstance().getTimeInMillis() - lastGathered >= 5000) {
+            lastGathered = Calendar.getInstance().getTimeInMillis();
+            wall_posts_list.clear();
+            Retrofit retrofit = new Retrofit.Builder()
+                    .baseUrl("https://ruby-4-pinb.herokuapp.com/")
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .build();
+            /*/users
+            users_list= new ArrayList<>();
+            UserApi userapi = retrofit.create(UserApi.class);
+            Call<List<User>> call1= userapi.getUsers();
+            call1.enqueue(new Callback<List<User>>()
+                          {
+                              @Override
+                              public void onResponse(Call<List<User>> call, Response<List<User>> response) {
+                                  if(response.code()!=200)
+                                      return; //handle error
+                                  List<User> users= response.body();
+                                  for(User u: users){
+                                      users_list.add(u);
+                                  }
+                              }
+                              @Override
+                              public void onFailure(Call<List<User>> call, Throwable t) {
                               }
                           }
-                          @Override
-                          public void onFailure(Call<List<User>> call, Throwable t) {
-                          }
-                      }
-        );*/
-        //wall
-        WallApi wallapi = retrofit.create(WallApi.class);
-        Call<List<Wall_post>> call= wallapi.getWall_posts();
-        call.enqueue(new Callback<List<Wall_post>>()
-                     {
-                         @Override
-                         public void onResponse(Call<List<Wall_post>> call, Response<List<Wall_post>> response) {
-                             if(!response.isSuccessful()) {
-                                 Toast.makeText(getActivity(), "Eror", Toast.LENGTH_SHORT).show();
-                             }
-                             else{
-                                 List<Wall_post> wall_posts= response.body();
-                                 for(Wall_post post: wall_posts){
-                                     wall_posts_list.add(post);
+            );*/
+            //wall
+            WallApi wallapi = retrofit.create(WallApi.class);
+            Call<List<Wall_post>> call= wallapi.getWall_posts();
+            call.enqueue(new Callback<List<Wall_post>>()
+                         {
+                             @Override
+                             public void onResponse(Call<List<Wall_post>> call, Response<List<Wall_post>> response) {
+                                 if(!response.isSuccessful()) {
+                                     Toast.makeText(getActivity(), "Eror", Toast.LENGTH_SHORT).show();
                                  }
-                                 Collections.reverse(wall_posts_list);
-                                 Adaptery adaptery = new Adaptery(thiscontext, wall_posts_list);
-                                 recyclerView.setAdapter(adaptery);
+                                 else{
+                                     List<Wall_post> wall_posts= response.body();
+                                     for(Wall_post post: wall_posts){
+                                         wall_posts_list.add(post);
+                                     }
+                                     Collections.reverse(wall_posts_list);
+                                     Adaptery adaptery = new Adaptery(thiscontext, wall_posts_list);
+                                     recyclerView.setAdapter(adaptery);
+                                 }
+                                 mySwipeRefreshLayout.setRefreshing(false);
                              }
-                             mySwipeRefreshLayout.setRefreshing(false);
-                         }
-                         @Override
-                         public void onFailure(Call<List<Wall_post>> call, Throwable t) {
-                             Toast.makeText(getActivity(), "Eror on reading wall. Check your internet connection"+t.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+                             @Override
+                             public void onFailure(Call<List<Wall_post>> call, Throwable t) {
+                                 Toast.makeText(getActivity(), "Eror on reading wall. Check your internet connection"+t.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
 
-                             mySwipeRefreshLayout.setRefreshing(false);
+                                 mySwipeRefreshLayout.setRefreshing(false);
+                             }
                          }
-                     }
-        );
+            );
+        }
     }
 
     @Override

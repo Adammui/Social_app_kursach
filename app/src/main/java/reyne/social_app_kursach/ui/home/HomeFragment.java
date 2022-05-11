@@ -8,7 +8,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -58,12 +57,25 @@ public class HomeFragment extends Fragment {
     public void fill_user(){
         if( Current_user.getCurrentUser()!=null) {
             TextView username = getView().findViewById(R.id.username);
-            username.setText(Current_user.getCurrentUser().getLogin());
             TextView email = getView().findViewById(R.id.email);
             email.setText(Current_user.getCurrentUser().getEmail());
-            TextView full_name = getView().findViewById(R.id.fullname);
-            full_name.setText(Current_user.getCurrentUser().getFul_name());
 
+            TextView full_name = getView().findViewById(R.id.fullname);
+            full_name.setText(Current_user.getCurrentUser().getFull_name());
+            int role= Current_user.getCurrentUser().getRole();
+            String role_text;
+            switch (role) {
+                case 1:
+                    username.setText(Current_user.getCurrentUser().getLogin()+"(regular)");
+                    return;
+                case 2:
+                    username.setText(Current_user.getCurrentUser().getLogin()+"(moderator)");
+                    return;
+                case 3:
+                    username.setText(Current_user.getCurrentUser().getLogin()+"(admin)");
+                    return;
+                default: return;
+            }
         }
     }
 }

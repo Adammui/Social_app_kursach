@@ -4,6 +4,8 @@ import static java.lang.Thread.sleep;
 
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.opengl.Visibility;
 import android.os.Bundle;
@@ -27,12 +29,17 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import java.lang.reflect.Array;
+import java.net.InetAddress;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
+import java.util.TimeZone;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -46,6 +53,8 @@ import reyne.social_app_kursach.api_retrofit.LoginApi;
 import reyne.social_app_kursach.api_retrofit.PostApi;
 import reyne.social_app_kursach.api_retrofit.UserApi;
 import reyne.social_app_kursach.api_retrofit.WallApi;
+import reyne.social_app_kursach.db.DbHelper;
+import reyne.social_app_kursach.db.DbPost;
 import reyne.social_app_kursach.model.Current_user;
 import reyne.social_app_kursach.model.Image;
 import reyne.social_app_kursach.model.User;
@@ -56,17 +65,20 @@ public class DashboardFragment extends Fragment {
     Context thiscontext;
     List<Wall_post> wall_posts_list;
     RecyclerView recyclerView;
-    public long lastGathered;
-
+    public long lastGathered, lastSync;
+    SwipeRefreshLayout mySwipeRefreshLayout;
+    SQLiteDatabase db ;
+    int need_local=0;
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         thiscontext = container.getContext();
         wall_posts_list= new ArrayList<>();
+        db = new DbHelper(thiscontext).getWritableDatabase();
         View view = inflater.inflate(R.layout.fragment_dashboard, container, false);
         recyclerView = view.findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(container.getContext()));
-        SwipeRefreshLayout mySwipeRefreshLayout =  view.findViewById(R.id.swiperefresh);
+        mySwipeRefreshLayout =  view.findViewById(R.id.swiperefresh);
         mySwipeRefreshLayout.setOnRefreshListener(
                 new SwipeRefreshLayout.OnRefreshListener() {
                     @Override
@@ -145,7 +157,7 @@ public class DashboardFragment extends Fragment {
 
                                  @Override
                                  public void onFailure(Call<Wall_post> call, Throwable t) {
-                                     Toast.makeText(getContext(), "Eror on logging. Check your internet connection", Toast.LENGTH_SHORT).show();
+                                     Toast.makeText(getContext(), "Eror on adding posts. Check your internet connection", Toast.LENGTH_SHORT).show();
 
                                  }
 
@@ -153,13 +165,27 @@ public class DashboardFragment extends Fragment {
                 );
             }
         });
+
         return view;
     }
 
     private void update( SwipeRefreshLayout mySwipeRefreshLayout) {
-        if (Calendar.getInstance().getTimeInMillis() - lastGathered >= 5000) {
+        if (Calendar.getInstance().getTimeInMillis() - lastGathered >= 6000) {
             lastGathered = Calendar.getInstance().getTimeInMillis();
-            wall_posts_list.clear();
+            sync_data_delete();
+                need_local=0;
+                wall_posts_list.clear();
+                Cursor cursor = DbPost.getActual(db);
+                while (cursor.moveToNext()) {
+                    wall_posts_list.add(new Wall_post(cursor.getInt(cursor.getColumnIndexOrThrow("id")),
+                            cursor.getInt(cursor.getColumnIndexOrThrow("user_id")), cursor.getString(cursor.getColumnIndexOrThrow("text")) ));
+                    Log.d("cursor count in local db",""+1111);
+                }
+                Adaptery adaptery = new Adaptery(thiscontext, wall_posts_list);
+                recyclerView.setAdapter(adaptery);
+                //Toast.makeText(thiscontext, "Подгружены сохраненные посты", Toast.LENGTH_LONG).show();
+                mySwipeRefreshLayout.setRefreshing(false);
+
             Retrofit retrofit = new Retrofit.Builder()
                     .baseUrl("https://ruby-4-pinb.herokuapp.com/")
                     .addConverterFactory(GsonConverterFactory.create())
@@ -192,30 +218,133 @@ public class DashboardFragment extends Fragment {
                              @Override
                              public void onResponse(Call<List<Wall_post>> call, Response<List<Wall_post>> response) {
                                  if(!response.isSuccessful()) {
-                                     Toast.makeText(getActivity(), "Eror", Toast.LENGTH_SHORT).show();
+                                     Log.d("update response eror ",""+ response.code());
                                  }
                                  else{
                                      List<Wall_post> wall_posts= response.body();
+                                     wall_posts_list.clear();
                                      for(Wall_post post: wall_posts){
                                          wall_posts_list.add(post);
                                      }
                                      Collections.reverse(wall_posts_list);
                                      Adaptery adaptery = new Adaptery(thiscontext, wall_posts_list);
                                      recyclerView.setAdapter(adaptery);
+                                     sync_data_update(wall_posts_list);
                                  }
                                  mySwipeRefreshLayout.setRefreshing(false);
                              }
                              @Override
                              public void onFailure(Call<List<Wall_post>> call, Throwable t) {
                                  Toast.makeText(getActivity(), "Eror on reading wall. Check your internet connection"+t.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
-
                                  mySwipeRefreshLayout.setRefreshing(false);
+                                 need_local=1;
+                                 call.cancel();
                              }
                          }
             );
         }
     }
 
+    private void sync_data_update(List<Wall_post> wall_posts) {
+        if (Calendar.getInstance().getTimeInMillis() - lastSync >= 10000) {
+            lastSync = Calendar.getInstance().getTimeInMillis();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.S'Z'");
+            sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
+            Cursor cursor = DbPost.getActual(db);
+            Log.d("post id",wall_posts.toString()+"");
+            try {
+                for (Wall_post post : wall_posts) {
+
+                Log.d("post id",post.getId()+" ");
+                cursor.moveToPosition(-1);
+                cursor.moveToNext();
+                while (cursor.getPosition() < cursor.getCount()) {
+                    Log.d("cur position",cursor.getPosition()+" ");
+
+                        Date local_post = sdf.parse(post.getUpdated_at());
+                        Date server_post = sdf.parse(cursor.getString(cursor.getColumnIndexOrThrow("updated_at")));
+                        Log.d("ASSSSS",local_post.getTime()+"   "+ server_post.getTime());
+                        Log.d("ASSSSS",post.getId()+"   "+ cursor.getInt(cursor.getColumnIndexOrThrow("id")));
+                        if (post.getId() == cursor.getInt(cursor.getColumnIndexOrThrow("id")) && local_post.getTime()
+                                < server_post.getTime()) {
+
+                            Log.d("TIMES",local_post+" "+server_post);
+                            Retrofit retrofit = new Retrofit.Builder()
+                                    .baseUrl("https://ruby-4-pinb.herokuapp.com/")
+                                    .addConverterFactory(GsonConverterFactory.create())
+                                    .build();
+                            PostApi postapi = retrofit.create(PostApi.class);
+                            Call<Wall_post> call = postapi.UpdatePost(
+                                    Current_user.getCurrentUser().getEmail(), Current_user.getCurrentUser().getAuth_token(),
+                                    post.getId(),
+                                    cursor.getString(cursor.getColumnIndexOrThrow("text")), cursor.getInt(cursor.getColumnIndexOrThrow("user_id")), null);
+                            call.enqueue(new Callback<Wall_post>() {
+                                             @Override
+                                             public void onResponse(Call<Wall_post> call, Response<Wall_post> response) {
+                                                 Log.d("edited posts offline sync", "true" + response.code());
+                                             }
+
+                                             @Override
+                                             public void onFailure(Call<Wall_post> call, Throwable t) {
+                                                 Toast.makeText(thiscontext, "Eror. Check your internet connection", Toast.LENGTH_LONG).show();
+                                                // Log.d("deleted posts offline sync", "false" + t.getLocalizedMessage());
+                                             }
+                                         }
+                            );
+                        }
+                        else if(post.getId() == cursor.getInt(cursor.getColumnIndexOrThrow("id")) && local_post.getTime()
+                                > server_post.getTime())
+                        {
+                            DbPost.editById( db, post.getId(), post.getText());
+                        }
+                    cursor.moveToNext();
+                }
+            }
+            update( mySwipeRefreshLayout);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    private void sync_data_delete() {
+        try{
+            Cursor cursor = DbPost.getDeletedSync(db);
+            while (cursor.moveToNext()) {
+                Retrofit retrofit = new Retrofit.Builder()
+                        .baseUrl("https://ruby-4-pinb.herokuapp.com/")
+                        .addConverterFactory(GsonConverterFactory.create())
+                        .build();
+                PostApi postapi = retrofit.create(PostApi.class);
+                Call<Wall_post> call = postapi.DeletePost(
+                        Current_user.getCurrentUser().getEmail(), Current_user.getCurrentUser().getAuth_token(),
+                        cursor.getInt(cursor.getColumnIndexOrThrow("id")));
+                call.enqueue(new Callback<Wall_post>() {
+                                 @Override
+                                 public void onResponse(Call<Wall_post> call, Response<Wall_post> response) {
+                                     Log.d("deleted posts offline sync", "true" + response.code());
+                                 }
+
+                                 @Override
+                                 public void onFailure(Call<Wall_post> call, Throwable t) {
+                                     Toast.makeText(thiscontext, "Eror. Check your internet connection", Toast.LENGTH_LONG).show();
+                                     Log.d("deleted posts offline sync", "false" + t.getLocalizedMessage());
+                                 }
+                             }
+                );
+            }}
+        catch (Exception e){Log.d("data sync delete",""+e.getLocalizedMessage());}
+    }
+
+    public boolean isInternetAvailable() {
+        try {
+            InetAddress.getByName("google.com");
+            //You can replace it with your name
+            return true;
+
+        } catch (Exception e) {
+            return false;
+        }
+    }
     @Override
     public void onDestroyView() {
         super.onDestroyView();

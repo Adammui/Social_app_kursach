@@ -2,6 +2,8 @@ package reyne.social_app_kursach.adapters;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -22,6 +24,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 
 import java.net.URLDecoder;
+import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;
@@ -32,6 +35,8 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import reyne.social_app_kursach.R;
 import reyne.social_app_kursach.api_retrofit.PostApi;
 import reyne.social_app_kursach.api_retrofit.UserApi;
+import reyne.social_app_kursach.db.DbHelper;
+import reyne.social_app_kursach.db.DbPost;
 import reyne.social_app_kursach.model.Current_user;
 import reyne.social_app_kursach.model.User;
 import reyne.social_app_kursach.model.Wall_post;
@@ -41,6 +46,7 @@ public class Adaptery extends RecyclerView.Adapter<Adaptery.MyViewHolder> {
     private Context mContext;
     private List<Wall_post> wall_posts_list;
     private int id_of_post;
+    SQLiteDatabase db ;
 
     public Adaptery(Context mContext, List<Wall_post> wall_posts_list)
     {
@@ -54,6 +60,7 @@ public class Adaptery extends RecyclerView.Adapter<Adaptery.MyViewHolder> {
         View v;
         LayoutInflater layoutInflater = LayoutInflater.from(mContext);
         v = layoutInflater.inflate(R.layout.wall_post_item, parent, false);
+        db = new DbHelper(mContext).getWritableDatabase();
         return new MyViewHolder(v);
     }
 
@@ -98,7 +105,7 @@ public class Adaptery extends RecyclerView.Adapter<Adaptery.MyViewHolder> {
                           }
                           @Override
                           public void onFailure(Call<List<User>> call, Throwable t) {
-                              Toast.makeText(mContext, "Eror on reading users", Toast.LENGTH_LONG).show();
+                              //Toast.makeText(mContext, "Eror on reading users", Toast.LENGTH_LONG).show();
                               Log.d("","eeror on reading users");
                           }
                       }
@@ -114,16 +121,14 @@ public class Adaptery extends RecyclerView.Adapter<Adaptery.MyViewHolder> {
                 Call<Wall_post> call = postapi.UpdatePost(
                         Current_user.getCurrentUser().getEmail(), Current_user.getCurrentUser().getAuth_token(),
                         wall_posts_list.get(position).getId(),
-                        String.valueOf(holder.edit.getText()), Current_user.getCurrentUser().getId(), null);
+                        String.valueOf(holder.edit.getText()), wall_posts_list.get(position).getUser_id(), null);
                 call.enqueue(new Callback<Wall_post>() {
                                  @Override
                                  public void onResponse(Call<Wall_post> call, Response<Wall_post> response) {
                                      Log.d("", "" + response.code());
                                      if (call.isExecuted()) {
-                                         holder.text.setText(holder.edit.getText());
-                                         holder.edit.setVisibility(View.GONE);
-                                         holder.save.setVisibility(View.INVISIBLE);
-                                         holder.text.setVisibility(View.VISIBLE);
+                                         holder.text.setText(holder.edit.getText());holder.edit.setVisibility(View.GONE);
+                                         holder.save.setVisibility(View.INVISIBLE);holder.text.setVisibility(View.VISIBLE);
                                          Toast.makeText(mContext, "Edited  ^)", Toast.LENGTH_LONG).show();
                                      }
                                  }
@@ -132,9 +137,18 @@ public class Adaptery extends RecyclerView.Adapter<Adaptery.MyViewHolder> {
                                  public void onFailure(Call<Wall_post> call, Throwable t) {
                                      Toast.makeText(mContext, "Eror. Check your internet connection", Toast.LENGTH_LONG).show();
                                      Log.d("",""+t.getLocalizedMessage());
+                                     call.cancel();
                                  }
                              }
                 );
+                try {
+                    DbPost.editById(db, wall_posts_list.get(position).getId(), String.valueOf(holder.edit.getText()));
+                    holder.text.setText(holder.edit.getText());holder.edit.setVisibility(View.GONE);
+                    holder.save.setVisibility(View.INVISIBLE);holder.text.setVisibility(View.VISIBLE);
+                    Toast.makeText(mContext, "Edited  ^)", Toast.LENGTH_LONG).show();
+                }catch (Exception e){Log.d("e In save to local db",""+e.getLocalizedMessage());}
+
+
             }});
         holder.viewoption.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -152,17 +166,15 @@ public class Adaptery extends RecyclerView.Adapter<Adaptery.MyViewHolder> {
                                 if(Current_user.getCurrentUser().getId()==wall_posts_list.get(position).getUser_id() ||
                                         Current_user.getCurrentUser().getRole()!=1) //admin can do everything and moder can delete and update posts
                                 {
-                                holder.edit.setText(holder.text.getText());
-                                holder.edit.setVisibility(View.VISIBLE);
-                                holder.save.setVisibility(View.VISIBLE);
-                                holder.text.setVisibility(View.GONE);
-                                id_of_post=item.getItemId();
-                                Log.d("syjc ",position+"");
+                                    holder.edit.setText(holder.text.getText());holder.edit.setVisibility(View.VISIBLE);
+                                    holder.save.setVisibility(View.VISIBLE);holder.text.setVisibility(View.GONE);
+                                    id_of_post=item.getItemId();
+                                    Log.d("syjc ",position+"");
                                 }
                                 else Toast.makeText(mContext, "Only owner or moderator can update posts", Toast.LENGTH_LONG).show();
 
                             }
-                                return true;
+                            return true;
                             case R.id.delete:
                                 if(Current_user.getCurrentUser().getId()==wall_posts_list.get(position).getUser_id() ||
                                         Current_user.getCurrentUser().getRole()!=1) //admin can do everything and moder can delete and update posts
@@ -180,12 +192,9 @@ public class Adaptery extends RecyclerView.Adapter<Adaptery.MyViewHolder> {
                                                      public void onResponse(Call<Wall_post> call, Response<Wall_post> response) {
                                                          Log.d("", "" + response.code());
                                                          if (call.isExecuted()) {
-                                                             holder.image.setVisibility(View.GONE);
-                                                             holder.edit.setVisibility(View.GONE);
-                                                             holder.text.setVisibility(View.GONE);
-                                                             holder.user.setVisibility(View.GONE);
-                                                             holder.save.setVisibility(View.GONE);
-                                                             holder.viewoption.setVisibility(View.GONE);
+                                                             holder.image.setVisibility(View.GONE);holder.edit.setVisibility(View.GONE);
+                                                             holder.text.setVisibility(View.GONE);holder.user.setVisibility(View.GONE);
+                                                             holder.save.setVisibility(View.GONE);holder.viewoption.setVisibility(View.GONE);
                                                              Toast.makeText(mContext, "Deleted  ^)", Toast.LENGTH_LONG).show();
                                                          }
                                                      }
@@ -193,14 +202,28 @@ public class Adaptery extends RecyclerView.Adapter<Adaptery.MyViewHolder> {
                                                      public void onFailure(Call<Wall_post> call, Throwable t) {
                                                          Toast.makeText(mContext, "Eror. Check your internet connection", Toast.LENGTH_LONG).show();
                                                          Log.d("",""+t.getLocalizedMessage());
+                                                         call.cancel();
                                                      }
                                                  }
                                     );
+                                    try
+                                    {
+
+                                        DbPost.deleteByIdOffline(db, wall_posts_list.get(position).getId());
+                                        holder.image.setVisibility(View.GONE);holder.edit.setVisibility(View.GONE);
+                                        holder.text.setVisibility(View.GONE);holder.user.setVisibility(View.GONE);
+                                        holder.save.setVisibility(View.GONE);holder.viewoption.setVisibility(View.GONE);
+                                        Toast.makeText(mContext, "Deleted  ^)", Toast.LENGTH_LONG).show();
+                                    }
+                                    catch (Exception e){Log.d(" e In save to local db",""+e.getLocalizedMessage());}
                                 }
                                 else Toast.makeText(mContext.getApplicationContext(), "Only owner or moderator can update posts", Toast.LENGTH_LONG).show();
                                 return true;
                             case R.id.save:
-                                //handle menu3 click
+                                if(DbPost.add(db, wall_posts_list.get(position)) != -1) {
+                                    Toast.makeText(mContext, "Saved to local", Toast.LENGTH_LONG).show();
+                                }
+                                else Toast.makeText(mContext, "Error saving", Toast.LENGTH_SHORT).show();
                                 return true;
                             default:
                                 return false;

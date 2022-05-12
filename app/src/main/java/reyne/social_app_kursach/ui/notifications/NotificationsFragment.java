@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Base64;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,17 +34,26 @@ import org.json.JSONObject;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 import reyne.social_app_kursach.LoginActivity;
 import reyne.social_app_kursach.MainActivity;
 import reyne.social_app_kursach.R;
+import reyne.social_app_kursach.adapters.Adaptery;
 import reyne.social_app_kursach.adapters.MessageAdapter;
+import reyne.social_app_kursach.api_retrofit.UserApi;
 import reyne.social_app_kursach.model.Current_user;
+import reyne.social_app_kursach.model.User;
 
 
 public class NotificationsFragment extends Fragment implements TextWatcher {
@@ -55,6 +65,7 @@ public class NotificationsFragment extends Fragment implements TextWatcher {
     private int IMAGE_REQUEST_ID = 1;
     private MessageAdapter messageAdapter;
     Context thiscontext;
+    List<User> users_list;
     private View view;
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -62,65 +73,68 @@ public class NotificationsFragment extends Fragment implements TextWatcher {
         thiscontext = container.getContext();
         initiateSocketConnection();
 
+        users_list = new ArrayList<>();
+
         messageEdit = view.findViewById(R.id.messageEdit);
         sendBtn = view.findViewById(R.id.sendBtn);
         pickImgBtn = view.findViewById(R.id.pickImgBtn);
 
         recyclerView = view.findViewById(R.id.recyclerView);
-
-        messageEdit.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-
-                if(hasFocus){
-                    LinearLayout.LayoutParams lp =
-                            new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 900);
-                    recyclerView.setLayoutParams(lp);
-                }
-            }
-        });
-
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://ruby-4-pinb.herokuapp.com/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+        //users
+        UserApi userapi = retrofit.create(UserApi.class);
+        Call<List<User>> call1= userapi.getUsers();
+        call1.enqueue(new Callback<List<User>>()
+                      {
+                          @Override
+                          public void onResponse(Call<List<User>> call, retrofit2.Response<List<User>> response) {
+                              if(response.code()!=200)
+                                  return; //handle error
+                              List<User> users= response.body();
+                              for(User u: users){
+                                 if (u.getId()!= Current_user.getCurrentUser().getId()) users_list.add(u);
+                              }
+                          }
+                          @Override
+                          public void onFailure(Call<List<User>> call, Throwable t) {
+                              //Toast.makeText(mContext, "Eror on reading users", Toast.LENGTH_LONG).show();
+                              Log.d("","eeror on reading users");
+                          }
+                      }
+        );
         return view;
-
-
     }
 
     private void initiateSocketConnection() {
-
         OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder().url(SERVER_PATH).build();
         webSocket = client.newWebSocket(request, new SocketListener());
-
     }
 
     @Override
     public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
     }
 
     @Override
     public void onTextChanged(CharSequence s, int start, int before, int count) {
-
     }
 
     @Override
     public void afterTextChanged(Editable s) {
-
         String string = s.toString().trim();
 
         if (string.isEmpty()) {
             resetMessageEdit();
         } else {
-
             sendBtn.setVisibility(View.VISIBLE);
             pickImgBtn.setVisibility(View.INVISIBLE);
         }
-
     }
 
     private void resetMessageEdit() {
-
         messageEdit.removeTextChangedListener(this);
 
         messageEdit.setText("");
@@ -128,11 +142,9 @@ public class NotificationsFragment extends Fragment implements TextWatcher {
         pickImgBtn.setVisibility(View.VISIBLE);
 
         messageEdit.addTextChangedListener(this);
-
     }
 
     private class SocketListener extends WebSocketListener {
-
         @Override
         public void onOpen(WebSocket webSocket, Response response) {
             super.onOpen(webSocket, response);
@@ -170,8 +182,11 @@ public class NotificationsFragment extends Fragment implements TextWatcher {
         }
     }
 
+    private void showUsers(){
+        Adaptery adaptery = new Adaptery(thiscontext, users_list);
+        recyclerView.setAdapter(adaptery);
+    }
     private void initializeView() {
-
         messageAdapter = new MessageAdapter(getLayoutInflater());
         recyclerView.setAdapter(messageAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(thiscontext));
@@ -195,10 +210,6 @@ public class NotificationsFragment extends Fragment implements TextWatcher {
 
                 resetMessageEdit();
 
-                LinearLayout.LayoutParams lp =
-                        new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 1500);
-                recyclerView.setLayoutParams(lp);
-
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -217,28 +228,26 @@ public class NotificationsFragment extends Fragment implements TextWatcher {
 
     }
 
-//    @Override
-//    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-//        super.onActivityResult(requestCode, resultCode, data);
-//
-//        if (requestCode == IMAGE_REQUEST_ID && resultCode == RESULT_OK) {
-//
-//            try {
-//                InputStream is = getContentResolver().openInputStream(data.getData());
-//                Bitmap image = BitmapFactory.decodeStream(is);
-//
-//                sendImage(image);
-//
-//            } catch (FileNotFoundException e) {
-//                e.printStackTrace();
-//            }
-//
-//        }
-//
-//    }
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == IMAGE_REQUEST_ID && resultCode == RESULT_OK) {
+
+            try {
+                InputStream is = thiscontext.getApplicationContext().getContentResolver().openInputStream(data.getData());
+                Bitmap image = BitmapFactory.decodeStream(is);
+
+                sendImage(image);
+
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+
+        }
+
+    }
 
     private void sendImage(Bitmap image) {
-
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         image.compress(Bitmap.CompressFormat.JPEG, 50, outputStream);
 

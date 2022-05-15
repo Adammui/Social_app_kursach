@@ -14,17 +14,15 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -46,16 +44,13 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
-import reyne.social_app_kursach.LoginActivity;
-import reyne.social_app_kursach.MainActivity;
 import reyne.social_app_kursach.R;
-import reyne.social_app_kursach.adapters.Adaptery;
 import reyne.social_app_kursach.adapters.MessageAdapter;
 import reyne.social_app_kursach.api_retrofit.UserApi;
 import reyne.social_app_kursach.model.Current_user;
 import reyne.social_app_kursach.model.User;
 
-
+//todo^ тут все равно работает чат почему-то , список юзеров не выводится
 public class NotificationsFragment extends Fragment implements TextWatcher {
     private WebSocket webSocket;
     private String SERVER_PATH = "https://chats-socket-server.herokuapp.com/";
@@ -95,7 +90,9 @@ public class NotificationsFragment extends Fragment implements TextWatcher {
                                   return; //handle error
                               List<User> users= response.body();
                               for(User u: users){
-                                 if (u.getId()!= Current_user.getCurrentUser().getId()) users_list.add(u);
+                                 if (u.getId()!= Current_user.getCurrentUser().getId()) {
+                                     users_list.add(u);
+                                     Log.d("",""+u.getId());}
                               }
                           }
                           @Override
@@ -154,7 +151,7 @@ public class NotificationsFragment extends Fragment implements TextWatcher {
                         "Socket Connection Successful!",
                         Toast.LENGTH_SHORT).show();
 
-                initializeView();
+                showUsers();
             });
 
         }
@@ -183,50 +180,51 @@ public class NotificationsFragment extends Fragment implements TextWatcher {
     }
 
     private void showUsers(){
-        Adaptery adaptery = new Adaptery(thiscontext, users_list);
-        recyclerView.setAdapter(adaptery);
+        Log.d("show",""+users_list.toString());
+        UserAdapter userAdapter = new UserAdapter(thiscontext, users_list);
+        recyclerView.setAdapter(userAdapter);
     }
-    private void initializeView() {
-        messageAdapter = new MessageAdapter(getLayoutInflater());
-        recyclerView.setAdapter(messageAdapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(thiscontext));
-
-
-        messageEdit.addTextChangedListener(this);
-
-        sendBtn.setOnClickListener(v -> {
-
-            JSONObject jsonObject = new JSONObject();
-            try {
-                jsonObject.put("name", Current_user.getCurrentUser().getLogin());
-                jsonObject.put("message", messageEdit.getText().toString());
-
-                webSocket.send(jsonObject.toString());
-
-                jsonObject.put("isSent", true);
-                messageAdapter.addItem(jsonObject);
-
-                recyclerView.smoothScrollToPosition(messageAdapter.getItemCount() - 1);
-
-                resetMessageEdit();
-
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-
-        });
-
-        pickImgBtn.setOnClickListener(v -> {
-
-            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-            intent.setType("image/*");
-
-            startActivityForResult(Intent.createChooser(intent, "Pick image"),
-                    IMAGE_REQUEST_ID);
-
-        });
-
-    }
+//    public void initializeView() {
+//        messageAdapter = new MessageAdapter(getLayoutInflater());
+//        recyclerView.setAdapter(messageAdapter);
+//        recyclerView.setLayoutManager(new LinearLayoutManager(thiscontext));
+//
+//
+//        messageEdit.addTextChangedListener(this);
+//
+//        sendBtn.setOnClickListener(v -> {
+//
+//            JSONObject jsonObject = new JSONObject();
+//            try {
+//                jsonObject.put("name", Current_user.getCurrentUser().getLogin());
+//                jsonObject.put("message", messageEdit.getText().toString());
+//
+//                webSocket.send(jsonObject.toString());
+//
+//                jsonObject.put("isSent", true);
+//                messageAdapter.addItem(jsonObject);
+//
+//                recyclerView.smoothScrollToPosition(messageAdapter.getItemCount() - 1);
+//
+//                resetMessageEdit();
+//
+//            } catch (JSONException e) {
+//                e.printStackTrace();
+//            }
+//
+//        });
+//
+//        pickImgBtn.setOnClickListener(v -> {
+//
+//            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+//            intent.setType("image/*");
+//
+//            startActivityForResult(Intent.createChooser(intent, "Pick image"),
+//                    IMAGE_REQUEST_ID);
+//
+//        });
+//
+//    }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -276,5 +274,58 @@ public class NotificationsFragment extends Fragment implements TextWatcher {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+    }
+
+    ////user adapter
+    public class UserAdapter  extends RecyclerView.Adapter<UserAdapter.MyViewHolder> {
+
+        private Context mContext;
+        private List<User> users_list;
+        private int id_of_post;
+
+        public UserAdapter(Context mContext, List<User> users_list)
+        {
+            this.mContext = mContext;
+            this.users_list = users_list;
+        }
+
+        @NonNull
+        @Override
+        public MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            View v;
+            LayoutInflater layoutInflater = LayoutInflater.from(mContext);
+            v = layoutInflater.inflate(R.layout.wall_post_item, parent, false);
+            return new UserAdapter.MyViewHolder(v);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
+            holder.username_chat.setText(users_list.get(position).getLogin());
+            Log.d("","initialized user");
+            holder.enter.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    //initializeView();
+                }
+            });
+        }
+
+        @Override
+        public int getItemCount() {
+            return users_list.size();
+        }
+
+        public class MyViewHolder extends RecyclerView.ViewHolder{
+            TextView username_chat,edit;
+            ImageView image;
+            Button enter;
+            public MyViewHolder(@NonNull View itemView) {
+                super(itemView);
+                username_chat = itemView.findViewById(R.id.username_chat);
+                enter = itemView.findViewById(R.id.enter);
+            }
+        }
+
+
     }
 }

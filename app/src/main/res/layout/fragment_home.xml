@@ -13,7 +13,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:text="Change account"
-        app:layout_constraintTop_toBottomOf="@+id/email"
+        app:layout_constraintTop_toBottomOf="@+id/textEmail"
         tools:layout_editor_absoluteX="-16dp" />
 
     <TextView
@@ -39,6 +39,17 @@
         app:layout_constraintTop_toBottomOf="@+id/textHome"
         tools:src="@tools:sample/avatars" />
 
+    <Button
+        android:id="@+id/buttonupload"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Загрузить фото"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/userpic" />
+
     <TextView
         android:id="@+id/username"
         android:layout_width="wrap_content"
@@ -49,7 +60,7 @@
         android:textColor="#B9B4FF"
         android:textSize="16dp"
         app:layout_constraintStart_toEndOf="@+id/textUsername"
-        app:layout_constraintTop_toBottomOf="@+id/userpic" />
+        app:layout_constraintTop_toBottomOf="@+id/buttonupload" />
 
     <TextView
         android:id="@+id/fullname"
@@ -85,7 +96,7 @@
         android:textColor="#FFFFFF"
         android:textSize="16dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/userpic" />
+        app:layout_constraintTop_toBottomOf="@+id/buttonupload" />
 
     <TextView
         android:id="@+id/textFullname"

@@ -15,15 +15,18 @@
         android:theme="@style/Theme.Material3.Dark.NoActionBar"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".RegisterActivity"
+            android:exported="true" />
+        <activity
             android:name=".LoginActivity"
-            android:exported="true" >
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
-                <data android:scheme="reyne.social_app_kursach"/>
+                <data android:scheme="reyne.social_app_kursach" />
             </intent-filter>
         </activity>
         <activity
@@ -38,9 +41,7 @@
         </activity>
         <activity
             android:name=".MainActivity"
-            android:exported="true" >
-        </activity>
-
+            android:exported="true"></activity>
     </application>
 
 </manifest>

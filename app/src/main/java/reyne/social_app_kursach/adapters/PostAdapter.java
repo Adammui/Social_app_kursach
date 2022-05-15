@@ -3,12 +3,8 @@ package reyne.social_app_kursach.adapters;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
-import android.os.Bundle;
 import android.util.Log;
-import android.view.ContextMenu;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,8 +19,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 
-import java.net.URLDecoder;
-import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;
@@ -41,14 +35,14 @@ import reyne.social_app_kursach.model.Current_user;
 import reyne.social_app_kursach.model.User;
 import reyne.social_app_kursach.model.Wall_post;
 
-public class Adaptery extends RecyclerView.Adapter<Adaptery.MyViewHolder> {
+public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyViewHolder> {
 
     private Context mContext;
     private List<Wall_post> wall_posts_list;
     private int id_of_post;
     SQLiteDatabase db ;
 
-    public Adaptery(Context mContext, List<Wall_post> wall_posts_list)
+    public PostAdapter(Context mContext, List<Wall_post> wall_posts_list)
     {
         this.mContext = mContext;
         this.wall_posts_list = wall_posts_list;
@@ -67,6 +61,7 @@ public class Adaptery extends RecyclerView.Adapter<Adaptery.MyViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder holder, @SuppressLint("RecyclerView") int position) {
         holder.text.setText(wall_posts_list.get(position).getText());
+        holder.edit.setText(wall_posts_list.get(position).getUpdated_at());
         try
         {
             if(wall_posts_list.get(position).getImage().getUrl()!=null) {
@@ -242,11 +237,12 @@ public class Adaptery extends RecyclerView.Adapter<Adaptery.MyViewHolder> {
     }
 
     public static class MyViewHolder extends RecyclerView.ViewHolder{
-        TextView text, user,edit;
+        TextView text, user,edit, date;
         ImageView image;
         Button viewoption, save;
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
+            date = itemView.findViewById(R.id.date_edit);
             image = itemView.findViewById(R.id.image);
             edit = itemView.findViewById(R.id.editText);
             text = itemView.findViewById(R.id.text);

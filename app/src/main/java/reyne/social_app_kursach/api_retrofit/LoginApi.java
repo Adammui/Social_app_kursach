@@ -13,9 +13,15 @@ import retrofit2.http.Query;
 import reyne.social_app_kursach.model.Current_user;
 import reyne.social_app_kursach.model.User;
 
-public interface LoginApi {
 
+public interface LoginApi {
         @GET("token_auth")
         Call<User> GetToken(@Query("email") String email,
-                                    @Query("password") String password);
+                            @Query("password") String password);
+        @GET("create_user_api")
+        Call<User> GetRegisteredUser(@Query("user[login]") String login,
+                                     @Query("user[full_name]") String full_name,
+                                     @Query("user[email]") String email,
+                                     @Query("user[password]") String password,
+                                     @Query("user[role_id]") int role_id);
 }

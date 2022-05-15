@@ -74,7 +74,7 @@ public class NotificationsFragment extends Fragment implements TextWatcher {
         sendBtn = view.findViewById(R.id.sendBtn);
         pickImgBtn = view.findViewById(R.id.pickImgBtn);
 
-        recyclerView = view.findViewById(R.id.recyclerView);
+        recyclerView = view.findViewById(R.id.recyclerViewUsersMessages);
         return view;
     }
 

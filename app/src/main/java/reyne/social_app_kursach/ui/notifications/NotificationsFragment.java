@@ -75,33 +75,6 @@ public class NotificationsFragment extends Fragment implements TextWatcher {
         pickImgBtn = view.findViewById(R.id.pickImgBtn);
 
         recyclerView = view.findViewById(R.id.recyclerView);
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://ruby-4-pinb.herokuapp.com/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-        //users
-        UserApi userapi = retrofit.create(UserApi.class);
-        Call<List<User>> call1= userapi.getUsers();
-        call1.enqueue(new Callback<List<User>>()
-                      {
-                          @Override
-                          public void onResponse(Call<List<User>> call, retrofit2.Response<List<User>> response) {
-                              if(response.code()!=200)
-                                  return; //handle error
-                              List<User> users= response.body();
-                              for(User u: users){
-                                 if (u.getId()!= Current_user.getCurrentUser().getId()) {
-                                     users_list.add(u);
-                                     Log.d("",""+u.getId());}
-                              }
-                          }
-                          @Override
-                          public void onFailure(Call<List<User>> call, Throwable t) {
-                              //Toast.makeText(mContext, "Eror on reading users", Toast.LENGTH_LONG).show();
-                              Log.d("","eeror on reading users");
-                          }
-                      }
-        );
         return view;
     }
 
@@ -151,7 +124,7 @@ public class NotificationsFragment extends Fragment implements TextWatcher {
                         "Socket Connection Successful!",
                         Toast.LENGTH_SHORT).show();
 
-                showUsers();
+                initializeView();
             });
 
         }
@@ -164,12 +137,14 @@ public class NotificationsFragment extends Fragment implements TextWatcher {
 
                 try {
                     JSONObject jsonObject = new JSONObject(text);
-                    jsonObject.put("isSent", false);
+                    if(jsonObject.getString("name").equals("Zae Games")) {
 
-                    messageAdapter.addItem(jsonObject);
+                        jsonObject.put("isSent", false);
 
-                    recyclerView.smoothScrollToPosition(messageAdapter.getItemCount() - 1);
+                        messageAdapter.addItem(jsonObject);
 
+                        recyclerView.smoothScrollToPosition(messageAdapter.getItemCount() - 1);
+                    }
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -181,50 +156,79 @@ public class NotificationsFragment extends Fragment implements TextWatcher {
 
     private void showUsers(){
         Log.d("show",""+users_list.toString());
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://ruby-4-pinb.herokuapp.com/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+        //users
+        UserApi userapi = retrofit.create(UserApi.class);
+        Call<List<User>> call1= userapi.getUsers();
+        call1.enqueue(new Callback<List<User>>()
+                      {
+                          @Override
+                          public void onResponse(Call<List<User>> call, retrofit2.Response<List<User>> response) {
+                              if(response.code()!=200)
+                                  return; //handle error
+                              List<User> users= response.body();
+                              Log.d("","ищан");
+                              for(User u: users){
+                                  if (u.getId()!= Current_user.getCurrentUser().getId()) {
+                                      users_list.add(u);
+                                      Log.d("loaded user id",""+u.getId());}
+                              }
+                          }
+                          @Override
+                          public void onFailure(Call<List<User>> call, Throwable t) {
+                              //Toast.makeText(mContext, "Eror on reading users", Toast.LENGTH_LONG).show();
+                              Log.d("","eeror on reading users");
+                          }
+                      }
+        );
         UserAdapter userAdapter = new UserAdapter(thiscontext, users_list);
         recyclerView.setAdapter(userAdapter);
+        Toast.makeText(thiscontext, "Подгружены юзеры", Toast.LENGTH_LONG).show();
     }
-//    public void initializeView() {
-//        messageAdapter = new MessageAdapter(getLayoutInflater());
-//        recyclerView.setAdapter(messageAdapter);
-//        recyclerView.setLayoutManager(new LinearLayoutManager(thiscontext));
-//
-//
-//        messageEdit.addTextChangedListener(this);
-//
-//        sendBtn.setOnClickListener(v -> {
-//
-//            JSONObject jsonObject = new JSONObject();
-//            try {
-//                jsonObject.put("name", Current_user.getCurrentUser().getLogin());
-//                jsonObject.put("message", messageEdit.getText().toString());
-//
-//                webSocket.send(jsonObject.toString());
-//
-//                jsonObject.put("isSent", true);
-//                messageAdapter.addItem(jsonObject);
-//
-//                recyclerView.smoothScrollToPosition(messageAdapter.getItemCount() - 1);
-//
-//                resetMessageEdit();
-//
-//            } catch (JSONException e) {
-//                e.printStackTrace();
-//            }
-//
-//        });
-//
-//        pickImgBtn.setOnClickListener(v -> {
-//
-//            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-//            intent.setType("image/*");
-//
-//            startActivityForResult(Intent.createChooser(intent, "Pick image"),
-//                    IMAGE_REQUEST_ID);
-//
-//        });
-//
-//    }
+    public void initializeView() {
+        messageAdapter = new MessageAdapter(getLayoutInflater(),"Zae Games");
+        recyclerView.setAdapter(messageAdapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(thiscontext));
+
+
+        messageEdit.addTextChangedListener(this);
+
+        sendBtn.setOnClickListener(v -> {
+
+            JSONObject jsonObject = new JSONObject();
+            try {
+                jsonObject.put("name", Current_user.getCurrentUser().getLogin());
+                jsonObject.put("message", messageEdit.getText().toString());
+
+                webSocket.send(jsonObject.toString());
+
+                jsonObject.put("isSent", true);
+                messageAdapter.addItem(jsonObject);
+
+                recyclerView.smoothScrollToPosition(messageAdapter.getItemCount() - 1);
+
+                resetMessageEdit();
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+        });
+
+        pickImgBtn.setOnClickListener(v -> {
+
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.setType("image/*");
+
+            startActivityForResult(Intent.createChooser(intent, "Pick image"),
+                    IMAGE_REQUEST_ID);
+
+        });
+
+    }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -276,56 +280,57 @@ public class NotificationsFragment extends Fragment implements TextWatcher {
         super.onDestroyView();
     }
 
-    ////user adapter
-    public class UserAdapter  extends RecyclerView.Adapter<UserAdapter.MyViewHolder> {
 
-        private Context mContext;
-        private List<User> users_list;
-        private int id_of_post;
+}
+////user adapter
+class UserAdapter  extends RecyclerView.Adapter<UserAdapter.MyViewHolder> {
 
-        public UserAdapter(Context mContext, List<User> users_list)
-        {
-            this.mContext = mContext;
-            this.users_list = users_list;
-        }
+    private Context mContext;
+    private List<User> users_list;
+    private int id_of_post;
 
-        @NonNull
-        @Override
-        public MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View v;
-            LayoutInflater layoutInflater = LayoutInflater.from(mContext);
-            v = layoutInflater.inflate(R.layout.wall_post_item, parent, false);
-            return new UserAdapter.MyViewHolder(v);
-        }
-
-        @Override
-        public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
-            holder.username_chat.setText(users_list.get(position).getLogin());
-            Log.d("","initialized user");
-            holder.enter.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    //initializeView();
-                }
-            });
-        }
-
-        @Override
-        public int getItemCount() {
-            return users_list.size();
-        }
-
-        public class MyViewHolder extends RecyclerView.ViewHolder{
-            TextView username_chat,edit;
-            ImageView image;
-            Button enter;
-            public MyViewHolder(@NonNull View itemView) {
-                super(itemView);
-                username_chat = itemView.findViewById(R.id.username_chat);
-                enter = itemView.findViewById(R.id.enter);
-            }
-        }
-
-
+    public UserAdapter(Context mContext, List<User> users_list)
+    {
+        this.mContext = mContext;
+        this.users_list = users_list;
     }
+
+    @NonNull
+    @Override
+    public MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View v;
+        LayoutInflater layoutInflater = LayoutInflater.from(mContext);
+        v = layoutInflater.inflate(R.layout.user_item, parent, false);
+        return new MyViewHolder(v);
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
+        holder.username_chat.setText(users_list.get(position).getEmail());
+        Log.d("","initialized user");
+        holder.enter.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //initializeView();
+            }
+        });
+    }
+
+    @Override
+    public int getItemCount() {
+        return users_list.size();
+    }
+
+    public class MyViewHolder extends RecyclerView.ViewHolder{
+        TextView username_chat,edit;
+        ImageView image;
+        Button enter;
+        public MyViewHolder(@NonNull View itemView) {
+            super(itemView);
+            username_chat = itemView.findViewById(R.id.username_chat);
+            enter = itemView.findViewById(R.id.enter);
+        }
+    }
+
+
 }

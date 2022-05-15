@@ -11,10 +11,17 @@
         android:id="@+id/button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
         android:text="Change account"
-        app:layout_constraintTop_toBottomOf="@+id/textEmail"
-        tools:layout_editor_absoluteX="-16dp" />
+        app:layout_constraintTop_toBottomOf="@+id/accountChanges"
+        tools:layout_editor_absoluteX="28dp" />
+
+    <Button
+        android:id="@+id/accountChanges"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Save changes"
+        app:layout_constraintTop_toBottomOf="@+id/email"
+        tools:layout_editor_absoluteX="0dp" />
 
     <TextView
         android:id="@+id/textHome"
@@ -44,42 +51,42 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:text="Загрузить фото"
+        android:text="Upload profile pic"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/userpic" />
 
-    <TextView
+    <EditText
         android:id="@+id/username"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="15dp"
         android:text="Username"
         android:textColor="#B9B4FF"
         android:textSize="16dp"
         app:layout_constraintStart_toEndOf="@+id/textUsername"
         app:layout_constraintTop_toBottomOf="@+id/buttonupload" />
 
-    <TextView
+    <EditText
         android:id="@+id/fullname"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="15dp"
         android:text="Full name"
         android:textColor="#B9B4FF"
         android:textSize="16dp"
         app:layout_constraintStart_toEndOf="@+id/textFullname"
         app:layout_constraintTop_toBottomOf="@+id/username" />
 
-    <TextView
+    <EditText
         android:id="@+id/email"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="56dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="15dp"
         android:text="Email"
         android:textColor="#B2ADFF"
         android:textSize="16dp"
@@ -91,7 +98,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="35dp"
         android:text="Username:"
         android:textColor="#FFFFFF"
         android:textSize="16dp"
@@ -103,7 +110,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="30dp"
         android:text="Full name:"
         android:textColor="#FFFFFF"
         android:textSize="16dp"
@@ -115,7 +122,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="30dp"
         android:text="Email:"
         android:textColor="#FFFFFF"
         android:textSize="16dp"

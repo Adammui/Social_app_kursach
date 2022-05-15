@@ -8,6 +8,7 @@ public class User {
     private String email;
     private String auth_token;
     private int role; //3=admin 2=moderator 1=regular
+    private String profile_pic;
 
     public User(int id, String login, String full_name, String email, String user_token, int role)
     {
@@ -19,6 +20,14 @@ public class User {
         this.role = role;
 
     }
+    public String getProfile_pic() {
+        return profile_pic;
+    }
+
+    public void setProfile_pic(String profile_pic) {
+        this.profile_pic = profile_pic;
+    }
+
     public int getRole() {
         return role;
     }

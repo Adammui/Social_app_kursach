@@ -33,6 +33,7 @@ public class MainScreen extends AppCompatActivity {
         sharedPref.putString("email", Current_user.getCurrentUser().getEmail());
         sharedPref.putString("auth_token", Current_user.getCurrentUser().getAuth_token());
         sharedPref.putInt("role", Current_user.getCurrentUser().getRole());
+        sharedPref.putString("profile_pic", Current_user.getCurrentUser().getAuth_token());
         sharedPref.apply();
 
     }
@@ -54,10 +55,15 @@ public class MainScreen extends AppCompatActivity {
                     sharedPref.getString("auth_token", ""), sharedPref.getInt("role", 0));
         }
     }
+    public static Context contextOfApplication;
+    public static Context getContextOfApplication()
+    {
+        return contextOfApplication;
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        contextOfApplication = getApplicationContext();
         binding = ActivityMainScreenBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         BottomNavigationView navView = findViewById(R.id.nav_view);

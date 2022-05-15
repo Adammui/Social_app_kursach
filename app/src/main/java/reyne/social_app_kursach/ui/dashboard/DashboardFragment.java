@@ -319,16 +319,6 @@ public class DashboardFragment extends Fragment {
         catch (Exception e){Log.d("data sync delete",""+e.getLocalizedMessage());}
     }
 
-    public boolean isInternetAvailable() {
-        try {
-            InetAddress.getByName("google.com");
-            //You can replace it with your name
-            return true;
-
-        } catch (Exception e) {
-            return false;
-        }
-    }
     @Override
     public void onDestroyView() {
         super.onDestroyView();

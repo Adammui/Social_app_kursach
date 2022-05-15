@@ -27,14 +27,12 @@ public class MessageAdapter extends RecyclerView.Adapter {
     private static final int TYPE_MESSAGE_RECEIVED = 1;
     private static final int TYPE_IMAGE_SENT = 2;
     private static final int TYPE_IMAGE_RECEIVED = 3;
-    String CHAT;
 
     private LayoutInflater inflater;
     private List<JSONObject> messages = new ArrayList<>();
 
-    public MessageAdapter (LayoutInflater inflater, String chatname) {
+    public MessageAdapter (LayoutInflater inflater) {
         this.inflater = inflater;
-        this.CHAT=chatname;
     }
 
     private class SentMessageHolder extends RecyclerView.ViewHolder {
@@ -170,13 +168,13 @@ public class MessageAdapter extends RecyclerView.Adapter {
                 if (message.has("message")) {
 
                     ReceivedMessageHolder messageHolder = (ReceivedMessageHolder) holder;
-                    messageHolder.nameTxt.setText(message.getString("name"));
+                    messageHolder.nameTxt.setText(message.getString("name_sender"));
                     messageHolder.messageTxt.setText(message.getString("message"));
 
                 } else {
 
                         ReceivedImageHolder imageHolder = (ReceivedImageHolder) holder;
-                        imageHolder.nameTxt.setText(message.getString("name"));
+                        imageHolder.nameTxt.setText(message.getString("name_sender"));
 
                         Bitmap bitmap = getBitmapFromString(message.getString("image"));
                         imageHolder.imageView.setImageBitmap(bitmap);

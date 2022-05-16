@@ -22,7 +22,6 @@ public class DbPost {
         values.put("id", wallPost.getId());
         values.put("user_id", wallPost.getUser_id());
         values.put("text", wallPost.getText());
-        //values.put("image", wallPost.getImage());
         values.put("created_at", wallPost.getCreated_at());
         values.put("updated_at", wallPost.getUpdated_at());
 
@@ -30,24 +29,17 @@ public class DbPost {
     }
 
     public static Cursor getDeletedSync(SQLiteDatabase db) {
-
         return db.rawQuery("select * from " + DbHelper.POSTS_TABLE + " where deleted = 'true' ;",null);
     }
     public static Cursor getActual(SQLiteDatabase db) {
         return db.rawQuery("select * from " + DbHelper.POSTS_TABLE + " where deleted = 'false' ;", null);
     }
 
-   // public static Cursor getAllByPriority(SQLiteDatabase db) {
-   //     return db.rawQuery("select * from " + DbHelper.POSTS_TABLE + " order by priority desc", null);
-   // }
-
     public static void deleteById(SQLiteDatabase db, int id) {
-        //db.rawQuery(" delete from " + DbHelper.Events_table + " where id_event = ? ", new String[]{String.valueOf(id)});
         db.delete(DbHelper.POSTS_TABLE, "id = ?" , new String[]{String.valueOf(id)});
         return;
     }
     public static void deleteByIdOffline(SQLiteDatabase db, int id) {
-        //db.rawQuery(" delete from " + DbHelper.Events_table + " where id_event = ? ", new String[]{String.valueOf(id)});
         ContentValues cv = new ContentValues();
 
         cv.put("deleted", "true");

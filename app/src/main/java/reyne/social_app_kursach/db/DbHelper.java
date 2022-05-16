@@ -10,7 +10,6 @@ public class DbHelper extends SQLiteOpenHelper {
     private static final int SCHEMA = 1;
     private static final String Database_name = "BlogDb";
     public static final String POSTS_TABLE = "Posts";
-    //private static final String USERS_TABLE = "Users";
 
     private static DbHelper instance = null;
 
@@ -35,10 +34,6 @@ public class DbHelper extends SQLiteOpenHelper {
                 + "created_at text not null, "
                 + "updated_at text not null);"
         );
-
-        //db.execSQL("INSERT INTO " + POSTS_TABLE +
-        //        " ( title ,imguri, category, address, latitude, longitude, price, date, note, priority) " +
-        //        " VALUES ('Поход к врачу','','здоровье', 'Минск, Больница 14',52.097622, 23.734051, 'бесценно', '2021/12/11', 'бобо в коленке', 1 );");
     }
 
     @Override

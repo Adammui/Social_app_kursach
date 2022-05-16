@@ -19,6 +19,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 import retrofit2.Call;
@@ -61,7 +63,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyViewHolder> 
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder holder, @SuppressLint("RecyclerView") int position) {
         holder.text.setText(wall_posts_list.get(position).getText());
-        holder.edit.setText(wall_posts_list.get(position).getUpdated_at());
+        holder.date.setText(wall_posts_list.get(position).getUpdated_at());
         try
         {
             if(wall_posts_list.get(position).getImage().getUrl()!=null) {
@@ -139,6 +141,9 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyViewHolder> 
                 try {
                     DbPost.editById(db, wall_posts_list.get(position).getId(), String.valueOf(holder.edit.getText()));
                     holder.text.setText(holder.edit.getText());holder.edit.setVisibility(View.GONE);
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.S'Z'");
+                    String date = sdf.format(new Date());
+                    holder.date.setText(date);
                     holder.save.setVisibility(View.INVISIBLE);holder.text.setVisibility(View.VISIBLE);
                     Toast.makeText(mContext, "Edited  ^)", Toast.LENGTH_LONG).show();
                 }catch (Exception e){Log.d("e In save to local db",""+e.getLocalizedMessage());}
@@ -190,7 +195,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.MyViewHolder> 
                                                              holder.image.setVisibility(View.GONE);holder.edit.setVisibility(View.GONE);
                                                              holder.text.setVisibility(View.GONE);holder.user.setVisibility(View.GONE);
                                                              holder.save.setVisibility(View.GONE);holder.viewoption.setVisibility(View.GONE);
-                                                             Toast.makeText(mContext, "Deleted  ^)", Toast.LENGTH_LONG).show();
+                                                             holder.date.setVisibility(View.GONE);Toast.makeText(mContext, "Deleted  ^)", Toast.LENGTH_LONG).show();
                                                          }
                                                      }
                                                      @Override

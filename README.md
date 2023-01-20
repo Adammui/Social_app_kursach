@@ -7,8 +7,8 @@ java mobile client for blog app; Server: ruby_4_pinb.
 - В мобильном приложении хранение закладок и важных сообщений в локальной БД, с возможным доступом к ним без подключения к сети.
 - Оформление личного профиля пользователя.
 ### При разработке приложения были использованы:
-- Androind java
-- IDE Androind Studio
+- Android java
+- IDE Android Studio
 - database local SQLite
 - connection to Rails server via http requests
 ## Запуск

@@ -10,7 +10,7 @@ java mobile client for blog app; Server: ruby_4_pinb.
 - Android java
 - IDE Android Studio
 - database local SQLite
-- connection to Rails server via http requests
+- connection to Rails server via http requests (Retrofit library)
 ## Запуск
 Через андроид студию на виртуальном телефоне или найти билд апк.
 > Social_app_kursach/app/release/app-release.apk

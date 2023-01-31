@@ -1,5 +1,6 @@
 # Course project from 3rd year
 java mobile client for blog app; Server: ruby_4_pinb.
+Андроид клиент для сервера https://github.com/Adammui/ruby_4_pinb
 ### Основные задачи:
 - Регистрация и авторизация пользователей.
 - Возможность авторизации через сторонние сервисы (с почтой гугл).
@@ -7,10 +8,10 @@ java mobile client for blog app; Server: ruby_4_pinb.
 - В мобильном приложении хранение закладок и важных сообщений в локальной БД, с возможным доступом к ним без подключения к сети.
 - Оформление личного профиля пользователя.
 ### При разработке приложения были использованы:
-- Android java
+- Android Java
 - IDE Android Studio
-- database local SQLite
-- connection to Rails server via http requests (Retrofit library)
+- Local Database SQLite
+- Connection to Rails server via http requests (Retrofit library)
 ## Запуск
 Через андроид студию на виртуальном телефоне или найти билд апк.
 > Social_app_kursach/app/release/app-release.apk
